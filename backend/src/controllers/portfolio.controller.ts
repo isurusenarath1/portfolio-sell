@@ -12,7 +12,7 @@ export const getPortfolio = async (req: Request, res: Response) => {
           role: "Your Role",
           subtitle: "Your Subtitle",
           welcomeMessage: "Welcome to my portfolio",
-          image: "/placeholder.svg"
+          image: "https://res.cloudinary.com/doxkkbljh/image/upload/v1/portfolio/placeholder"
         }
       });
       await defaultPortfolio.save();

@@ -1,25 +1,10 @@
 import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import cloudinary from '../config/cloudinary';
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, uniqueSuffix + ext);
-  }
-});
+// Configure multer for memory storage
+const storage = multer.memoryStorage();
 
 // File filter to only allow images
 const fileFilter = (req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
@@ -50,30 +35,27 @@ export const uploadImage = async (req: Request, res: Response) => {
       });
     }
 
-    // Get the base URL from environment variable or default to localhost
-    const baseUrl = process.env.BACKEND_URL || 'http://localhost:5000';
-    
-    // Create the full URL for the uploaded file
-    const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    // Convert buffer to base64
+    const b64 = Buffer.from(req.file.buffer).toString('base64');
+    const dataURI = `data:${req.file.mimetype};base64,${b64}`;
 
-    // Verify the file exists
-    const filePath = path.join(uploadsDir, req.file.filename);
-    if (!fs.existsSync(filePath)) {
-      throw new Error('File was not saved properly');
-    }
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(dataURI, {
+      folder: 'portfolio',
+      resource_type: 'auto'
+    });
 
-    console.log('File uploaded successfully:', {
-      filename: req.file.filename,
-      path: filePath,
-      url: fileUrl
+    console.log('File uploaded successfully to Cloudinary:', {
+      public_id: result.public_id,
+      url: result.secure_url
     });
 
     res.status(200).json({
       success: true,
       message: 'File uploaded successfully',
       data: {
-        filename: req.file.filename,
-        path: fileUrl
+        url: result.secure_url,
+        public_id: result.public_id
       }
     });
   } catch (error: any) {

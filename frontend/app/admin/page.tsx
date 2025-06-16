@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -68,12 +69,17 @@ export default function AdminDashboard() {
     try {
       setIsLoading(true)
       const result = await uploadImage(file)
-      setHeroData(prev => ({
-        ...prev,
-        image: result.imageUrl
-      }))
-      toast.success("Image uploaded successfully")
+      if (result.imageUrl) {
+        setHeroData(prev => ({
+          ...prev,
+          image: result.imageUrl
+        }))
+        toast.success("Image uploaded successfully")
+      } else {
+        throw new Error("No image URL received")
+      }
     } catch (error) {
+      console.error("Upload error:", error)
       toast.error("Failed to upload image")
     } finally {
       setIsLoading(false)
@@ -208,10 +214,12 @@ export default function AdminDashboard() {
                         <p className="text-white/60 text-sm">Upload a new hero image (recommended: 400x400px)</p>
                         {heroData.image && (
                           <div className="mt-2">
-                            <img 
+                            <Image 
                               src={heroData.image} 
                               alt="Hero preview" 
-                              className="w-32 h-32 object-cover rounded-lg"
+                              width={128}
+                              height={128}
+                              className="object-cover rounded-lg"
                             />
                           </div>
                         )}
