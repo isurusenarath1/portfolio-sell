@@ -5,11 +5,23 @@ export const getPortfolio = async (req: Request, res: Response) => {
   try {
     const portfolio = await Portfolio.findOne();
     if (!portfolio) {
-      return res.status(404).json({ message: 'Portfolio not found' });
+      // If no portfolio exists, create one with default values
+      const defaultPortfolio = new Portfolio({
+        hero: {
+          name: "Your Name",
+          role: "Your Role",
+          subtitle: "Your Subtitle",
+          welcomeMessage: "Welcome to my portfolio",
+          image: "/placeholder.svg"
+        }
+      });
+      await defaultPortfolio.save();
+      return res.json(defaultPortfolio);
     }
     res.json(portfolio);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching portfolio', error });
+    console.error('Error in getPortfolio:', error);
+    res.status(500).json({ message: 'Error fetching portfolio data' });
   }
 };
 
@@ -24,7 +36,8 @@ export const createPortfolio = async (req: Request, res: Response) => {
     await portfolio.save();
     res.status(201).json(portfolio);
   } catch (error) {
-    res.status(500).json({ message: 'Error creating portfolio', error });
+    console.error('Error in createPortfolio:', error);
+    res.status(500).json({ message: 'Error creating portfolio' });
   }
 };
 
@@ -35,11 +48,19 @@ export const updatePortfolio = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Portfolio not found' });
     }
 
-    Object.assign(portfolio, req.body);
+    // Update only the provided fields
+    if (req.body.hero) {
+      portfolio.hero = {
+        ...portfolio.hero,
+        ...req.body.hero
+      };
+    }
+
     await portfolio.save();
     res.json(portfolio);
   } catch (error) {
-    res.status(500).json({ message: 'Error updating portfolio', error });
+    console.error('Error in updatePortfolio:', error);
+    res.status(500).json({ message: 'Error updating portfolio' });
   }
 };
 
@@ -53,6 +74,7 @@ export const deletePortfolio = async (req: Request, res: Response) => {
     await portfolio.deleteOne();
     res.json({ message: 'Portfolio deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting portfolio', error });
+    console.error('Error in deletePortfolio:', error);
+    res.status(500).json({ message: 'Error deleting portfolio' });
   }
 }; 
