@@ -2,7 +2,9 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import portfolioRoutes from './routes/portfolio.routes';
+import uploadRoutes from './routes/upload.routes';
 
 dotenv.config();
 
@@ -11,6 +13,9 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/portfolio';
@@ -25,6 +30,7 @@ mongoose.connect(MONGODB_URI)
 
 // Routes
 app.use('/api/portfolio', portfolioRoutes);
+app.use('/api', uploadRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

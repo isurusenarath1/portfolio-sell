@@ -12,24 +12,84 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save } from "lucide-react"
+import { getPortfolio, updateHeroSection, uploadImage, HeroSection } from "@/services/api"
+import { toast } from "sonner"
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [activeTab, setActiveTab] = useState("home")
+  const [heroData, setHeroData] = useState<HeroSection>({
+    name: "",
+    role: "",
+    subtitle: "",
+    welcomeMessage: "",
+    image: ""
+  })
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     const auth = localStorage.getItem("adminAuth")
     if (auth === "true") {
       setIsAuthenticated(true)
+      fetchPortfolioData()
     } else {
       router.push("/admin/login")
     }
   }, [router])
 
+  const fetchPortfolioData = async () => {
+    try {
+      const data = await getPortfolio()
+      if (data.hero) {
+        setHeroData(data.hero)
+      }
+    } catch (error) {
+      toast.error("Failed to fetch portfolio data")
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem("adminAuth")
     router.push("/admin/login")
+  }
+
+  const handleHeroChange = (field: keyof HeroSection, value: string) => {
+    setHeroData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setIsLoading(true)
+      const result = await uploadImage(file)
+      setHeroData(prev => ({
+        ...prev,
+        image: result.imageUrl
+      }))
+      toast.success("Image uploaded successfully")
+    } catch (error) {
+      toast.error("Failed to upload image")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSaveHero = async () => {
+    try {
+      setIsLoading(true)
+      await updateHeroSection(heroData)
+      toast.success("Hero section updated successfully")
+    } catch (error) {
+      toast.error("Failed to update hero section")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!isAuthenticated) {
@@ -104,12 +164,17 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                       <div>
                         <Label className="text-white">Name</Label>
-                        <Input defaultValue="John Doe" className="bg-white/5 border-white/20 text-white" />
+                        <Input 
+                          value={heroData.name}
+                          onChange={(e) => handleHeroChange("name", e.target.value)}
+                          className="bg-white/5 border-white/20 text-white" 
+                        />
                       </div>
                       <div>
                         <Label className="text-white">Role</Label>
                         <Input
-                          defaultValue="Software Engineer | Frontend Developer"
+                          value={heroData.role}
+                          onChange={(e) => handleHeroChange("role", e.target.value)}
                           className="bg-white/5 border-white/20 text-white"
                         />
                       </div>
@@ -117,14 +182,16 @@ export default function AdminDashboard() {
                     <div>
                       <Label className="text-white">Subtitle</Label>
                       <Input
-                        defaultValue="Crafting digital experiences with modern web technologies"
+                        value={heroData.subtitle}
+                        onChange={(e) => handleHeroChange("subtitle", e.target.value)}
                         className="bg-white/5 border-white/20 text-white"
                       />
                     </div>
                     <div>
                       <Label className="text-white">Welcome Message</Label>
                       <Textarea
-                        defaultValue="Welcome to my digital space where creativity meets functionality."
+                        value={heroData.welcomeMessage}
+                        onChange={(e) => handleHeroChange("welcomeMessage", e.target.value)}
                         className="bg-white/5 border-white/20 text-white"
                       />
                     </div>
@@ -134,14 +201,29 @@ export default function AdminDashboard() {
                         <Input
                           type="file"
                           accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={isLoading}
                           className="bg-white/5 border-white/20 text-white file:bg-purple-600 file:text-white file:border-0 file:rounded file:px-4 file:py-2"
                         />
                         <p className="text-white/60 text-sm">Upload a new hero image (recommended: 400x400px)</p>
+                        {heroData.image && (
+                          <div className="mt-2">
+                            <img 
+                              src={heroData.image} 
+                              alt="Hero preview" 
+                              className="w-32 h-32 object-cover rounded-lg"
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <Button className="bg-gradient-to-r from-purple-600 to-pink-600">
+                    <Button 
+                      className="bg-gradient-to-r from-purple-600 to-pink-600"
+                      onClick={handleSaveHero}
+                      disabled={isLoading}
+                    >
                       <Save className="w-4 h-4 mr-2" />
-                      Save Changes
+                      {isLoading ? "Saving..." : "Save Changes"}
                     </Button>
                   </CardContent>
                 </Card>
