@@ -12,7 +12,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save } from "lucide-react"
-import { getPortfolio, updateHeroSection, uploadImage, HeroSection } from "@/services/api"
+import { getPortfolio, updateHeroSection, uploadImage, HeroSection } from "@/app/services/api"
 import { toast } from "sonner"
 
 export default function AdminDashboard() {

@@ -18,7 +18,8 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "mongoose": "^7.0.3",
-    "multer": "^2.0.1"
+    "multer": "^2.0.1",
+    "sonner": "^2.0.5"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
