@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, useScroll, useTransform } from "framer-motion"
 import {
   ChevronDown,
@@ -20,16 +20,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
+import { getPortfolio } from "@/app/services/api"
 
-// Mock data - in real app this would come from API/database
+// Mock data for other sections - in real app this would come from API/database
 const portfolioData = {
-  hero: {
-    name: "John Doe",
-    role: "Software Engineer | Frontend Developer | React Enthusiast",
-    subtitle: "Crafting digital experiences with modern web technologies",
-    welcomeMessage: "Welcome to my digital space where creativity meets functionality.",
-    image: "/placeholder.svg?height=400&width=400",
-  },
   skills: {
     frontend: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
     backend: ["Node.js", "Express", "PostgreSQL", "MongoDB", "GraphQL"],
@@ -113,6 +107,31 @@ export default function Portfolio() {
   const { scrollYProgress } = useScroll()
   const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"])
   const [selectedProject, setSelectedProject] = useState(null)
+  const [heroData, setHeroData] = useState({
+    name: "",
+    role: "",
+    subtitle: "",
+    welcomeMessage: "",
+    image: "/placeholder.svg?height=400&width=400"
+  })
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchHeroData = async () => {
+      try {
+        const data = await getPortfolio()
+        if (data.hero) {
+          setHeroData(data.hero)
+        }
+      } catch (error) {
+        console.error("Failed to fetch hero data:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchHeroData()
+  }, [])
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
@@ -168,7 +187,7 @@ export default function Portfolio() {
                 transition={{ delay: 0.2 }}
                 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-4 lg:mb-6"
               >
-                {portfolioData.hero.name}
+                {isLoading ? "Loading..." : heroData.name}
               </motion.h1>
 
               <motion.div
@@ -177,7 +196,7 @@ export default function Portfolio() {
                 transition={{ delay: 0.4 }}
                 className="text-lg sm:text-xl lg:text-2xl text-purple-300 mb-4"
               >
-                {portfolioData.hero.role}
+                {isLoading ? "Loading..." : heroData.role}
               </motion.div>
 
               <motion.p
@@ -186,7 +205,7 @@ export default function Portfolio() {
                 transition={{ delay: 0.6 }}
                 className="text-base lg:text-lg text-white/80 mb-6 lg:mb-8 max-w-2xl mx-auto lg:mx-0"
               >
-                {portfolioData.hero.welcomeMessage}
+                {isLoading ? "Loading..." : heroData.welcomeMessage}
               </motion.p>
 
               <motion.div
@@ -221,7 +240,7 @@ export default function Portfolio() {
             >
               <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
                 <Image
-                  src={portfolioData.hero.image || "/placeholder.svg"}
+                  src={heroData.image || "/placeholder.svg"}
                   alt="Profile"
                   width={400}
                   height={400}
