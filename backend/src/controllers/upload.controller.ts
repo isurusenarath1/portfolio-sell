@@ -29,11 +29,18 @@ export const upload = multer({
 export const uploadImage = async (req: Request, res: Response) => {
   try {
     if (!req.file) {
+      console.error('No file uploaded');
       return res.status(400).json({
         success: false,
         message: 'No file uploaded'
       });
     }
+
+    console.log('File received:', {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    });
 
     // Convert buffer to base64
     const b64 = Buffer.from(req.file.buffer).toString('base64');
@@ -60,6 +67,31 @@ export const uploadImage = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('Upload error:', error);
+    
+    // Handle specific error types
+    if (error.message.includes('Invalid file type')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message
+      });
+    }
+
+    if (error.message.includes('File too large')) {
+      return res.status(400).json({
+        success: false,
+        message: 'File size exceeds 5MB limit'
+      });
+    }
+
+    // Handle Cloudinary errors
+    if (error.http_code) {
+      return res.status(error.http_code).json({
+        success: false,
+        message: 'Error uploading to Cloudinary',
+        error: error.message
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: 'Error uploading file',

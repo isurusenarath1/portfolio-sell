@@ -35,7 +35,7 @@ export const uploadImage = async (file: File) => {
   formData.append('image', file);
 
   try {
-    const response = await fetch(`${API_URL}/upload`, {
+    const response = await fetch(`${API_URL.replace('/portfolio', '')}/upload`, {
       method: 'POST',
       body: formData,
       headers: {
@@ -45,10 +45,13 @@ export const uploadImage = async (file: File) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
+      console.error('Upload error response:', errorData);
       throw new Error(errorData?.message || 'Failed to upload image');
     }
 
     const data = await response.json();
+    console.log('Upload response:', data);
+
     if (!data.data?.url) {
       throw new Error('No image URL received from server');
     }
