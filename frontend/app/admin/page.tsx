@@ -27,6 +27,8 @@ export default function AdminDashboard() {
     image: ""
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -66,8 +68,26 @@ export default function AdminDashboard() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please upload an image file')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size should be less than 5MB')
+      return
+    }
+
+    // Create preview URL
+    const preview = URL.createObjectURL(file)
+    setPreviewUrl(preview)
+
     try {
       setIsLoading(true)
+      setUploadProgress(0)
+      
       const result = await uploadImage(file)
       if (result.imageUrl) {
         setHeroData(prev => ({
@@ -81,8 +101,10 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Upload error:", error)
       toast.error("Failed to upload image")
+      setPreviewUrl(null)
     } finally {
       setIsLoading(false)
+      setUploadProgress(0)
     }
   }
 
@@ -203,23 +225,43 @@ export default function AdminDashboard() {
                     </div>
                     <div>
                       <Label className="text-white">Hero Image</Label>
-                      <div className="space-y-2">
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          disabled={isLoading}
-                          className="bg-white/5 border-white/20 text-white file:bg-purple-600 file:text-white file:border-0 file:rounded file:px-4 file:py-2"
-                        />
-                        <p className="text-white/60 text-sm">Upload a new hero image (recommended: 400x400px)</p>
-                        {heroData.image && (
-                          <div className="mt-2">
-                            <Image 
-                              src={heroData.image} 
-                              alt="Hero preview" 
-                              width={128}
-                              height={128}
-                              className="object-cover rounded-lg"
+                      <div className="space-y-4">
+                        <div className="flex flex-col space-y-2">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={isLoading}
+                            className="bg-white/5 border-white/20 text-white file:bg-purple-600 file:text-white file:border-0 file:rounded file:px-4 file:py-2"
+                          />
+                          <p className="text-white/60 text-sm">Upload a new hero image (recommended: 400x400px, max 5MB)</p>
+                        </div>
+
+                        {/* Image Preview Section */}
+                        <div className="relative">
+                          {(previewUrl || heroData.image) && (
+                            <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-purple-500/50">
+                              <Image 
+                                src={previewUrl || heroData.image} 
+                                alt="Hero preview" 
+                                fill
+                                className="object-cover"
+                              />
+                              {isLoading && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                  <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Upload Progress */}
+                        {isLoading && uploadProgress > 0 && (
+                          <div className="w-full bg-white/10 rounded-full h-2">
+                            <div 
+                              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
                             />
                           </div>
                         )}

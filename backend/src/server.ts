@@ -53,8 +53,6 @@ mongoose.connect(process.env.MONGODB_URI!)
     console.log('Connected to MongoDB Atlas');
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
-      console.log(`Static files are being served from: ${uploadsDir}`);
-      console.log(`Uploads URL: http://localhost:${PORT}/uploads/`);
     });
   })
   .catch((error) => {
