@@ -784,10 +784,10 @@ export default function AdminDashboard() {
                           onChange={(e) => handleContactFilterChange('status', e.target.value)}
                           className="w-full bg-white/5 border border-white/20 text-white rounded-md p-2 mt-1"
                         >
-                          <option value="">All Status</option>
-                          <option value="unread">Unread</option>
-                          <option value="read">Read</option>
-                          <option value="replied">Replied</option>
+                          <option value="" className="text-black">All Status</option>
+                          <option value="unread" className="text-black">Unread</option>
+                          <option value="read" className="text-black">Read</option>
+                          <option value="replied" className="text-black">Replied</option>
                         </select>
                       </div>
                       <div>
@@ -797,9 +797,9 @@ export default function AdminDashboard() {
                           onChange={(e) => handleContactFilterChange('limit', parseInt(e.target.value))}
                           className="w-full bg-white/5 border border-white/20 text-white rounded-md p-2 mt-1"
                         >
-                          <option value={5}>5 per page</option>
-                          <option value={10}>10 per page</option>
-                          <option value={20}>20 per page</option>
+                          <option value={5} className="text-black">5 per page</option>
+                          <option value={10} className="text-black">10 per page</option>
+                          <option value={20} className="text-black">20 per page</option>
                         </select>
                       </div>
                     </div>
@@ -937,9 +937,9 @@ export default function AdminDashboard() {
                   onChange={(e) => handleContactStatusChange(selectedContact._id!, e.target.value as Contact['status'])}
                   className="w-full bg-white/5 border border-white/20 text-white rounded-md p-2 mt-1"
                 >
-                  <option value="unread">Unread</option>
-                  <option value="read">Read</option>
-                  <option value="replied">Replied</option>
+                  <option value="unread" className="text-black">Unread</option>
+                  <option value="read" className="text-black">Read</option>
+                  <option value="replied" className="text-black">Replied</option>
                 </select>
               </div>
               <div>
@@ -952,7 +952,7 @@ export default function AdminDashboard() {
                 <Button
                   variant="outline"
                   onClick={() => setSelectedContact(null)}
-                  className="border-white/20 text-white hover:bg-white/10"
+                  className="border-white/20 text-black hover:bg-white/10"
                 >
                   Close
                 </Button>
@@ -1007,9 +1007,9 @@ function AddSkillDialog({ onAddSkill }: { onAddSkill: (category: keyof SkillsTyp
               onChange={(e) => setCategory(e.target.value as keyof SkillsType)}
               className="w-full bg-white/5 border border-white/20 text-white rounded-md p-2 mt-1"
             >
-              <option value="frontend">Frontend</option>
-              <option value="backend">Backend</option>
-              <option value="tools">Tools</option>
+              <option value="frontend" className="text-black">Frontend</option>
+              <option value="backend" className="text-black">Backend</option>
+              <option value="tools" className="text-black">Tools</option>
             </select>
           </div>
           <div>
