@@ -21,6 +21,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
 import { getPortfolio, Skills as SkillsType, Education as EducationType, Experience as ExperienceType, Project as ProjectType, createContact, Settings } from "@/app/services/api"
+import InteractiveBackground from "@/components/ui/interactive-background"
+import CometEffect from "@/components/ui/comet-effect"
 
 // Mock data for other sections - in real app this would come from API/database
 const portfolioData = {}
@@ -119,7 +121,9 @@ export default function Portfolio() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen">
+      <InteractiveBackground />
+      <CometEffect />
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-black/20 backdrop-blur-md border-b border-white/10">
         <div className="container mx-auto px-4 sm:px-6 py-4">
