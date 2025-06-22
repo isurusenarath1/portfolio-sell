@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
-import { getPortfolio, Skills as SkillsType, Education as EducationType, Experience as ExperienceType, Project as ProjectType } from "@/app/services/api"
+import { getPortfolio, Skills as SkillsType, Education as EducationType, Experience as ExperienceType, Project as ProjectType, createContact } from "@/app/services/api"
 
 // Mock data for other sections - in real app this would come from API/database
 const portfolioData = {}
@@ -45,6 +45,13 @@ export default function Portfolio() {
   const [experience, setExperience] = useState<ExperienceType[]>([]);
   const [projects, setProjects] = useState<ProjectType[]>([]);
   const [isLoading, setIsLoading] = useState(true)
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: ""
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     const fetchPortfolioData = async () => {
@@ -77,6 +84,34 @@ export default function Portfolio() {
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!contactForm.name || !contactForm.email || !contactForm.subject || !contactForm.message) {
+      alert("Please fill in all fields")
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      await createContact(contactForm)
+      setContactForm({ name: "", email: "", subject: "", message: "" })
+      alert("Message sent successfully!")
+    } catch (error) {
+      console.error("Failed to send message:", error)
+      alert("Failed to send message. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleContactChange = (field: string, value: string) => {
+    setContactForm(prev => ({
+      ...prev,
+      [field]: value
+    }))
   }
 
   return (
@@ -523,30 +558,54 @@ export default function Portfolio() {
                 <CardHeader>
                   <CardTitle className="text-white text-2xl">Send a Message</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Input
-                      placeholder="Your Name"
-                      className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
-                    />
-                  </div>
-                  <div>
-                    <Input
-                      type="email"
-                      placeholder="Your Email"
-                      className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
-                    />
-                  </div>
-                  <div>
-                    <Textarea
-                      placeholder="Your Message"
-                      rows={5}
-                      className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
-                    />
-                  </div>
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                    Send Message
-                  </Button>
+                <CardContent>
+                  <form onSubmit={handleContactSubmit} className="space-y-4">
+                    <div>
+                      <Input
+                        placeholder="Your Name"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+                        value={contactForm.name}
+                        onChange={(e) => handleContactChange("name", e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Input
+                        type="email"
+                        placeholder="Your Email"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+                        value={contactForm.email}
+                        onChange={(e) => handleContactChange("email", e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Input
+                        placeholder="Subject"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+                        value={contactForm.subject}
+                        onChange={(e) => handleContactChange("subject", e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Textarea
+                        placeholder="Your Message"
+                        rows={5}
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+                        value={contactForm.message}
+                        onChange={(e) => handleContactChange("message", e.target.value)}
+                        required
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Sending..." : "Send Message"}
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
             </motion.div>

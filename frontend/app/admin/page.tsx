@@ -12,8 +12,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save } from "lucide-react"
-import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation, Experience as ExperienceType, addExperience, updateExperience, deleteExperience, Project as ProjectType, addProject, updateProject, deleteProject } from "@/app/services/api"
+import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save, Search, Eye, MessageSquare } from "lucide-react"
+import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation, Experience as ExperienceType, addExperience, updateExperience, deleteExperience, Project as ProjectType, addProject, updateProject, deleteProject, Contact, ContactStats, getContacts, getContact, updateContactStatus, deleteContact, getContactStats } from "@/app/services/api"
 import { toast } from "sonner"
 
 const initialEducationState = {
@@ -57,6 +57,28 @@ export default function AdminDashboard() {
   const [education, setEducation] = useState<EducationType[]>([])
   const [experience, setExperience] = useState<ExperienceType[]>([])
   const [projects, setProjects] = useState<ProjectType[]>([])
+  const [contacts, setContacts] = useState<Contact[]>([])
+  const [contactStats, setContactStats] = useState<ContactStats>({
+    total: 0,
+    unread: 0,
+    read: 0,
+    replied: 0,
+    recent: 0
+  })
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null)
+  const [contactFilters, setContactFilters] = useState({
+    page: 1,
+    limit: 10,
+    status: '',
+    search: ''
+  })
+  const [contactPagination, setContactPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalContacts: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -89,6 +111,12 @@ export default function AdminDashboard() {
       }
       if (data.projects) {
         setProjects(data.projects)
+      }
+      if (data.contacts) {
+        setContacts(data.contacts)
+      }
+      if (data.contactStats) {
+        setContactStats(data.contactStats)
       }
     } catch (error) {
       toast.error("Failed to fetch portfolio data")
@@ -289,13 +317,76 @@ export default function AdminDashboard() {
 
   const handleDeleteProject = async (id: number) => {
     try {
-      const updatedProjects = await deleteProject(id);
-      setProjects(updatedProjects);
-      toast.success("Project deleted successfully");
+      setIsLoading(true)
+      await deleteProject(id)
+      setProjects(prev => prev.filter(project => project.id !== id))
+      toast.success("Project deleted successfully")
     } catch (error) {
-      toast.error("Failed to delete project");
+      toast.error("Failed to delete project")
+    } finally {
+      setIsLoading(false)
     }
-  };
+  }
+
+  // Contact functions
+  const fetchContactData = async () => {
+    try {
+      setIsLoading(true)
+      const [contactsData, statsData] = await Promise.all([
+        getContacts(contactFilters),
+        getContactStats()
+      ])
+      setContacts(contactsData.contacts)
+      setContactPagination(contactsData.pagination)
+      setContactStats(statsData)
+    } catch (error) {
+      toast.error("Failed to fetch contact data")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleContactStatusChange = async (id: string, status: Contact['status']) => {
+    try {
+      setIsLoading(true)
+      await updateContactStatus(id, status)
+      setContacts(prev => prev.map(contact => 
+        contact._id === id ? { ...contact, status } : contact
+      ))
+      toast.success("Contact status updated successfully")
+    } catch (error) {
+      toast.error("Failed to update contact status")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteContact = async (id: string) => {
+    try {
+      setIsLoading(true)
+      await deleteContact(id)
+      setContacts(prev => prev.filter(contact => contact._id !== id))
+      toast.success("Contact deleted successfully")
+    } catch (error) {
+      toast.error("Failed to delete contact")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleContactFilterChange = (key: string, value: string | number) => {
+    setContactFilters(prev => ({
+      ...prev,
+      [key]: value,
+      page: key !== 'page' ? 1 : (typeof value === 'number' ? value : 1) // Ensure page is always a number
+    }))
+  }
+
+  useEffect(() => {
+    if (activeTab === 'contact') {
+      fetchContactData()
+    }
+  }, [activeTab, contactFilters])
 
   if (!isAuthenticated) {
     return <div>Loading...</div>
@@ -646,38 +737,241 @@ export default function AdminDashboard() {
             {/* Contact Management */}
             <TabsContent value="contact">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                <h2 className="text-2xl font-bold text-white">Contact Messages</h2>
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                  <h2 className="text-2xl font-bold text-white">Contact Messages</h2>
+                  
+                  {/* Contact Stats */}
+                  <div className="flex flex-wrap gap-4">
+                    <div className="bg-white/10 rounded-lg p-3 text-center">
+                      <div className="text-2xl font-bold text-white">{contactStats.total}</div>
+                      <div className="text-white/70 text-sm">Total</div>
+                    </div>
+                    <div className="bg-red-500/20 rounded-lg p-3 text-center">
+                      <div className="text-2xl font-bold text-red-400">{contactStats.unread}</div>
+                      <div className="text-white/70 text-sm">Unread</div>
+                    </div>
+                    <div className="bg-blue-500/20 rounded-lg p-3 text-center">
+                      <div className="text-2xl font-bold text-blue-400">{contactStats.read}</div>
+                      <div className="text-white/70 text-sm">Read</div>
+                    </div>
+                    <div className="bg-green-500/20 rounded-lg p-3 text-center">
+                      <div className="text-2xl font-bold text-green-400">{contactStats.replied}</div>
+                      <div className="text-white/70 text-sm">Replied</div>
+                    </div>
+                  </div>
+                </div>
 
-                <div className="space-y-4">
-                  {[1, 2, 3].map((item) => (
-                    <Card key={item} className="bg-white/10 border-white/20 backdrop-blur-md">
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-white">John Smith</CardTitle>
-                            <CardDescription className="text-white/70">
-                              john.smith@example.com • 2 hours ago
-                            </CardDescription>
-                          </div>
-                          <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                {/* Filters */}
+                <Card className="bg-white/10 border-white/20 backdrop-blur-md">
+                  <CardContent className="pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label className="text-white">Search</Label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/50 w-4 h-4" />
+                          <Input
+                            placeholder="Search contacts..."
+                            value={contactFilters.search}
+                            onChange={(e) => handleContactFilterChange('search', e.target.value)}
+                            className="bg-white/5 border-white/20 text-white pl-10"
+                          />
                         </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-white/80">
-                          Hi! I'm interested in discussing a potential project collaboration. Would you be available for
-                          a call next week?
-                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-white">Status</Label>
+                        <select
+                          value={contactFilters.status}
+                          onChange={(e) => handleContactFilterChange('status', e.target.value)}
+                          className="w-full bg-white/5 border border-white/20 text-white rounded-md p-2 mt-1"
+                        >
+                          <option value="">All Status</option>
+                          <option value="unread">Unread</option>
+                          <option value="read">Read</option>
+                          <option value="replied">Replied</option>
+                        </select>
+                      </div>
+                      <div>
+                        <Label className="text-white">Per Page</Label>
+                        <select
+                          value={contactFilters.limit}
+                          onChange={(e) => handleContactFilterChange('limit', parseInt(e.target.value))}
+                          className="w-full bg-white/5 border border-white/20 text-white rounded-md p-2 mt-1"
+                        >
+                          <option value={5}>5 per page</option>
+                          <option value={10}>10 per page</option>
+                          <option value={20}>20 per page</option>
+                        </select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Contact List */}
+                <div className="space-y-4">
+                  {isLoading ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  ) : contacts.length === 0 ? (
+                    <Card className="bg-white/10 border-white/20 backdrop-blur-md">
+                      <CardContent className="pt-6 text-center">
+                        <MessageSquare className="w-12 h-12 text-white/50 mx-auto mb-4" />
+                        <p className="text-white/70">No contacts found</p>
                       </CardContent>
                     </Card>
-                  ))}
+                  ) : (
+                    contacts.map((contact) => (
+                      <Card key={contact._id} className="bg-white/10 border-white/20 backdrop-blur-md">
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <CardTitle className="text-white">{contact.name}</CardTitle>
+                                <Badge 
+                                  variant={contact.status === 'unread' ? 'destructive' : contact.status === 'read' ? 'secondary' : 'default'}
+                                  className={contact.status === 'unread' ? 'bg-red-500/20 text-red-400' : contact.status === 'read' ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'}
+                                >
+                                  {contact.status}
+                                </Badge>
+                              </div>
+                              <CardDescription className="text-white/70">
+                                {contact.email} • {new Date(contact.createdAt!).toLocaleDateString()} {new Date(contact.createdAt!).toLocaleTimeString()}
+                              </CardDescription>
+                              <div className="mt-2">
+                                <span className="text-white/80 font-medium">Subject: </span>
+                                <span className="text-white/70">{contact.subject}</span>
+                              </div>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-blue-400 hover:text-blue-300"
+                                onClick={() => setSelectedContact(contact)}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-red-400 hover:text-red-300"
+                                onClick={() => handleDeleteContact(contact._id!)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-white/80 line-clamp-2">{contact.message}</p>
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
                 </div>
+
+                {/* Pagination */}
+                {contactPagination.totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!contactPagination.hasPrevPage}
+                      onClick={() => handleContactFilterChange('page', contactPagination.currentPage - 1)}
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-white/70">
+                      Page {contactPagination.currentPage} of {contactPagination.totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={!contactPagination.hasNextPage}
+                      onClick={() => handleContactFilterChange('page', contactPagination.currentPage + 1)}
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
               </motion.div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
+
+      {/* Contact Detail Dialog */}
+      <Dialog open={!!selectedContact} onOpenChange={() => setSelectedContact(null)}>
+        <DialogContent className="bg-slate-900 border-white/20 max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white">Contact Details</DialogTitle>
+          </DialogHeader>
+          {selectedContact && (
+            <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-white">Name</Label>
+                  <p className="text-white/80 mt-1">{selectedContact.name}</p>
+                </div>
+                <div>
+                  <Label className="text-white">Email</Label>
+                  <p className="text-white/80 mt-1">{selectedContact.email}</p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-white">Subject</Label>
+                <p className="text-white/80 mt-1">{selectedContact.subject}</p>
+              </div>
+              <div>
+                <Label className="text-white">Date</Label>
+                <p className="text-white/80 mt-1">
+                  {new Date(selectedContact.createdAt!).toLocaleDateString()} at {new Date(selectedContact.createdAt!).toLocaleTimeString()}
+                </p>
+              </div>
+              <div>
+                <Label className="text-white">Status</Label>
+                <select
+                  value={selectedContact.status}
+                  onChange={(e) => handleContactStatusChange(selectedContact._id!, e.target.value as Contact['status'])}
+                  className="w-full bg-white/5 border border-white/20 text-white rounded-md p-2 mt-1"
+                >
+                  <option value="unread">Unread</option>
+                  <option value="read">Read</option>
+                  <option value="replied">Replied</option>
+                </select>
+              </div>
+              <div>
+                <Label className="text-white">Message</Label>
+                <div className="bg-white/5 border border-white/20 rounded-md p-3 mt-1">
+                  <p className="text-white/80 whitespace-pre-wrap">{selectedContact.message}</p>
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedContact(null)}
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    handleDeleteContact(selectedContact._id!);
+                    setSelectedContact(null);
+                  }}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

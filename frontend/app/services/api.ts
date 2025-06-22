@@ -1,4 +1,5 @@
 const API_URL = 'http://localhost:5000/api/portfolio';
+const CONTACT_API_URL = 'http://localhost:5000/api/contact';
 
 export interface HeroSection {
   name: string;
@@ -38,6 +39,38 @@ export interface Project {
   techStack: string[];
   liveUrl: string;
   githubUrl: string;
+}
+
+export interface Contact {
+  _id?: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  status: 'unread' | 'read' | 'replied';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ContactStats {
+  total: number;
+  unread: number;
+  read: number;
+  replied: number;
+  recent: number;
+}
+
+export interface ContactPagination {
+  currentPage: number;
+  totalPages: number;
+  totalContacts: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface ContactResponse {
+  contacts: Contact[];
+  pagination: ContactPagination;
 }
 
 export const getPortfolio = async () => {
@@ -193,4 +226,62 @@ export const uploadImage = async (file: File) => {
     console.error('Upload error:', error);
     throw error;
   }
+};
+
+// Contact API functions
+export const getContacts = async (params?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+}): Promise<ContactResponse> => {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.append('page', params.page.toString());
+  if (params?.limit) searchParams.append('limit', params.limit.toString());
+  if (params?.status) searchParams.append('status', params.status);
+  if (params?.search) searchParams.append('search', params.search);
+
+  const url = `${CONTACT_API_URL}?${searchParams.toString()}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error('Failed to fetch contacts');
+  return response.json();
+};
+
+export const getContact = async (id: string): Promise<Contact> => {
+  const response = await fetch(`${CONTACT_API_URL}/${id}`);
+  if (!response.ok) throw new Error('Failed to fetch contact');
+  return response.json();
+};
+
+export const createContact = async (contactData: Omit<Contact, '_id' | 'status' | 'createdAt' | 'updatedAt'>): Promise<Contact> => {
+  const response = await fetch(CONTACT_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(contactData),
+  });
+  if (!response.ok) throw new Error('Failed to create contact');
+  return response.json();
+};
+
+export const updateContactStatus = async (id: string, status: Contact['status']): Promise<Contact> => {
+  const response = await fetch(`${CONTACT_API_URL}/${id}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) throw new Error('Failed to update contact status');
+  return response.json();
+};
+
+export const deleteContact = async (id: string): Promise<void> => {
+  const response = await fetch(`${CONTACT_API_URL}/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete contact');
+};
+
+export const getContactStats = async (): Promise<ContactStats> => {
+  const response = await fetch(`${CONTACT_API_URL}/stats`);
+  if (!response.ok) throw new Error('Failed to fetch contact statistics');
+  return response.json();
 }; 

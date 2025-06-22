@@ -6,6 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import portfolioRoutes from './routes/portfolio.routes';
 import uploadRoutes from './routes/upload.routes';
+import contactRoutes from './routes/contact.routes';
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use('/uploads', express.static(uploadsDir));
 // Routes
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
