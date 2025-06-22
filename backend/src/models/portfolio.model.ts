@@ -40,6 +40,7 @@ export interface IPortfolio extends Document {
     tabName: string;
     tabImage: string;
     logoText: string;
+    cvUrl: string;
     contact: {
       email: string;
       phone: string;
@@ -92,6 +93,7 @@ const PortfolioSchema: Schema = new Schema({
     tabName: { type: String, default: "My Portfolio" },
     tabImage: { type: String, default: "/placeholder-logo.svg" },
     logoText: { type: String, default: "Portfolio" },
+    cvUrl: { type: String, default: "" },
     contact: {
       email: { type: String, default: "contact@example.com" },
       phone: { type: String, default: "+1 234 567 890" },

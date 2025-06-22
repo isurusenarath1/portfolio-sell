@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save, Search, Eye, MessageSquare, Settings as SettingsIcon } from "lucide-react"
 import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation, Experience as ExperienceType, addExperience, updateExperience, deleteExperience, Project as ProjectType, addProject, updateProject, deleteProject, Contact, ContactStats, getContacts, getContact, updateContactStatus, deleteContact, getContactStats, Settings, updateSettings } from "@/app/services/api"
 import { toast } from "sonner"
+import InteractiveBackground from "@/components/ui/interactive-background"
 
 const initialEducationState = {
   degree: "",
@@ -52,6 +53,7 @@ const initialSettingsState: Settings = {
     github: "",
     linkedin: "",
   },
+  cvUrl: "",
 };
 
 export default function AdminDashboard() {
@@ -1000,6 +1002,15 @@ export default function AdminDashboard() {
                         />
                         {settings.tabImage && <Image src={settings.tabImage} alt="Tab preview" width={32} height={32} className="rounded" />}
                       </div>
+                    </div>
+                    <div>
+                      <Label className="text-white">CV Link (Google Drive)</Label>
+                      <Input
+                        value={settings.cvUrl}
+                        onChange={(e) => handleSettingsChange("cvUrl", e.target.value)}
+                        placeholder="Paste your shareable Google Drive link here"
+                        className="bg-white/5 border-white/20 text-white"
+                      />
                     </div>
                   </CardContent>
                 </Card>

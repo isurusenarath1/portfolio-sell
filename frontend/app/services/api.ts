@@ -77,6 +77,7 @@ export interface Settings {
   tabName: string;
   tabImage: string;
   logoText: string;
+  cvUrl: string;
   contact: {
     email: string;
     phone: string;

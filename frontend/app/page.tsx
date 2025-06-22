@@ -208,8 +208,9 @@ export default function Portfolio() {
                 </Button>
                 <Button
                   size="lg"
-                  onClick={() => window.open("#", "_blank")}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 lg:px-8 py-3"
+                  onClick={() => window.open(settings?.cvUrl || "#", "_blank")}
+                  disabled={!settings?.cvUrl}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 lg:px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   My CV
                 </Button>
