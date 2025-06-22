@@ -8,6 +8,12 @@ export interface HeroSection {
   image: string;
 }
 
+export interface Skills {
+  frontend: string[];
+  backend: string[];
+  tools: string[];
+}
+
 export const getPortfolio = async () => {
   const response = await fetch(API_URL);
   if (!response.ok) {
@@ -26,6 +32,20 @@ export const updateHeroSection = async (heroData: HeroSection) => {
   });
   if (!response.ok) {
     throw new Error('Failed to update hero section');
+  }
+  return response.json();
+};
+
+export const updateSkills = async (skillsData: Skills) => {
+  const response = await fetch(`${API_URL}/skills`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(skillsData),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update skills');
   }
   return response.json();
 };

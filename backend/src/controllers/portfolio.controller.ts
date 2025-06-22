@@ -77,4 +77,27 @@ export const deletePortfolio = async (req: Request, res: Response) => {
     console.error('Error in deletePortfolio:', error);
     res.status(500).json({ message: 'Error deleting portfolio' });
   }
+};
+
+export const updateSkills = async (req: Request, res: Response) => {
+  try {
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+
+    const { frontend, backend, tools } = req.body;
+
+    portfolio.skills = {
+      frontend: frontend || portfolio.skills.frontend,
+      backend: backend || portfolio.skills.backend,
+      tools: tools || portfolio.skills.tools,
+    };
+
+    await portfolio.save();
+    res.json(portfolio);
+  } catch (error) {
+    console.error('Error in updateSkills:', error);
+    res.status(500).json({ message: 'Error updating skills' });
+  }
 }; 

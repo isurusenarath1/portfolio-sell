@@ -174,7 +174,7 @@ export default function Portfolio() {
         </motion.div>
 
         <div className="container mx-auto px-4 sm:px-6 z-10">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-4 lg:gap-8 items-center">
             <motion.div
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -223,9 +223,8 @@ export default function Portfolio() {
                 </Button>
                 <Button
                   size="lg"
-                  variant="outline"
                   onClick={() => window.open("#", "_blank")}
-                  className="border-white/30 text-white hover:bg-white/10 px-6 lg:px-8 py-3"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-6 lg:px-8 py-3"
                 >
                   My CV
                 </Button>
@@ -238,14 +237,14 @@ export default function Portfolio() {
               transition={{ delay: 0.4, duration: 0.8 }}
               className="flex justify-center order-1 lg:order-2"
             >
-              <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
+              <div className="relative w-80 h-80 sm:w-[26rem] sm:h-[26rem] lg:w-[30rem] lg:h-[30rem] rounded-full overflow-hidden border-4 border-purple-400 shadow-xl">
                 <Image
                   src={heroData.image || "/placeholder.svg"}
                   alt="Profile"
-                  width={400}
-                  height={400}
-                  className="w-full h-full object-contain"
-                  style={{ filter: "drop-shadow(0px 0px 10px rgba(0,0,0,0.2))" }}
+                  width={480}
+                  height={480}
+                  className="w-full h-full object-cover rounded-full"
+                  style={{ filter: "drop-shadow(0px 0px 16px rgba(128,0,128,0.15))" }}
                 />
               </div>
             </motion.div>
@@ -474,8 +473,7 @@ export default function Portfolio() {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="border-white/30 text-white hover:bg-white/10"
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                         onClick={() => window.open(project.liveUrl, "_blank")}
                       >
                         <ExternalLink className="w-4 h-4 mr-2" />
@@ -483,8 +481,7 @@ export default function Portfolio() {
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline"
-                        className="border-white/30 text-white hover:bg-white/10"
+                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
                         onClick={() => window.open(project.githubUrl, "_blank")}
                       >
                         <Github className="w-4 h-4 mr-2" />

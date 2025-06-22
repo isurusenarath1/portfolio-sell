@@ -13,7 +13,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save } from "lucide-react"
-import { getPortfolio, updateHeroSection, uploadImage, HeroSection } from "@/app/services/api"
+import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType } from "@/app/services/api"
 import { toast } from "sonner"
 
 export default function AdminDashboard() {
@@ -25,6 +25,11 @@ export default function AdminDashboard() {
     subtitle: "",
     welcomeMessage: "",
     image: ""
+  })
+  const [skills, setSkills] = useState<SkillsType>({
+    frontend: [],
+    backend: [],
+    tools: []
   })
   const [isLoading, setIsLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -46,6 +51,9 @@ export default function AdminDashboard() {
       const data = await getPortfolio()
       if (data.hero) {
         setHeroData(data.hero)
+      }
+      if (data.skills) {
+        setSkills(data.skills)
       }
     } catch (error) {
       toast.error("Failed to fetch portfolio data")
@@ -115,6 +123,45 @@ export default function AdminDashboard() {
       toast.success("Hero section updated successfully")
     } catch (error) {
       toast.error("Failed to update hero section")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSkillChange = (category: keyof SkillsType, index: number, value: string) => {
+    setSkills(prev => {
+      const newSkills = { ...prev };
+      const newCategorySkills = [...newSkills[category]];
+      newCategorySkills[index] = value;
+      newSkills[category] = newCategorySkills;
+      return newSkills;
+    });
+  }
+
+  const handleAddSkill = (category: keyof SkillsType, skill: string) => {
+    if (!skill.trim()) {
+      toast.error("Skill name cannot be empty")
+      return
+    }
+    const newSkills = { ...skills }
+    newSkills[category].push(skill)
+    handleSaveSkills(newSkills)
+  }
+
+  const handleDeleteSkill = (category: keyof SkillsType, index: number) => {
+    const newSkills = { ...skills }
+    newSkills[category].splice(index, 1)
+    handleSaveSkills(newSkills)
+  }
+
+  const handleSaveSkills = async (updatedSkills: SkillsType) => {
+    try {
+      setIsLoading(true)
+      await updateSkills(updatedSkills)
+      setSkills(updatedSkills);
+      toast.success("Skills updated successfully")
+    } catch (error) {
+      toast.error("Failed to update skills")
     } finally {
       setIsLoading(false)
     }
@@ -285,61 +332,38 @@ export default function AdminDashboard() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div className="flex justify-between items-center">
                   <h2 className="text-2xl font-bold text-white">Skills Management</h2>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Skill
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-slate-900 border-white/20 max-w-lg">
-                      <DialogHeader>
-                        <DialogTitle className="text-white">Add New Skill</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-2">
-                        <div>
-                          <Label className="text-white">Category</Label>
-                          <select className="w-full bg-white/5 border border-white/20 text-white rounded-md p-2 mt-1">
-                            <option value="frontend">Frontend</option>
-                            <option value="backend">Backend</option>
-                            <option value="tools">Tools</option>
-                            <option value="other">Other</option>
-                          </select>
-                        </div>
-                        <div>
-                          <Label className="text-white">Skill Name</Label>
-                          <Input
-                            className="bg-white/5 border-white/20 text-white"
-                            placeholder="e.g. React, Node.js, etc."
-                          />
-                        </div>
-                        <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Skill
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <AddSkillDialog onAddSkill={handleAddSkill} />
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-6">
-                  {["Frontend", "Backend", "Tools"].map((category) => (
+                  {(Object.keys(skills) as Array<keyof SkillsType>).map((category) => (
                     <Card key={category} className="bg-white/10 border-white/20 backdrop-blur-md">
                       <CardHeader>
-                        <CardTitle className="text-white">{category}</CardTitle>
+                        <CardTitle className="text-white capitalize">{category}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2">
-                          {["React", "Next.js", "TypeScript"].map((skill) => (
-                            <div key={skill} className="flex items-center justify-between">
+                          {skills[category].map((skill, index) => (
+                            <div key={index} className="flex items-center justify-between">
                               <Badge variant="secondary" className="bg-purple-600/20 text-purple-300">
                                 {skill}
                               </Badge>
                               <div className="flex space-x-1">
-                                <Button size="sm" variant="ghost" className="text-white/70 hover:text-white">
-                                  <Edit className="w-3 h-3" />
-                                </Button>
-                                <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
+                                <EditSkillDialog
+                                  skill={skill}
+                                  category={category}
+                                  onUpdateSkill={(value) => {
+                                    const newSkills = { ...skills };
+                                    newSkills[category][index] = value;
+                                    handleSaveSkills(newSkills);
+                                  }}
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-red-400 hover:text-red-300"
+                                  onClick={() => handleDeleteSkill(category, index)}
+                                >
                                   <Trash2 className="w-3 h-3" />
                                 </Button>
                               </div>
@@ -706,5 +730,110 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
+  )
+}
+
+function AddSkillDialog({ onAddSkill }: { onAddSkill: (category: keyof SkillsType, skill: string) => void }) {
+  const [category, setCategory] = useState<keyof SkillsType>("frontend")
+  const [skill, setSkill] = useState("")
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSubmit = () => {
+    onAddSkill(category, skill)
+    setSkill("")
+    setIsOpen(false);
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Skill
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="bg-slate-900 border-white/20 max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-white">Add New Skill</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div>
+            <Label className="text-white">Category</Label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as keyof SkillsType)}
+              className="w-full bg-white/5 border border-white/20 text-white rounded-md p-2 mt-1"
+            >
+              <option value="frontend">Frontend</option>
+              <option value="backend">Backend</option>
+              <option value="tools">Tools</option>
+            </select>
+          </div>
+          <div>
+            <Label className="text-white">Skill Name</Label>
+            <Input
+              value={skill}
+              onChange={(e) => setSkill(e.target.value)}
+              className="bg-white/5 border-white/20 text-white"
+              placeholder="e.g. React, Node.js, etc."
+            />
+          </div>
+          <Button onClick={handleSubmit} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Skill
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+function EditSkillDialog({
+  skill,
+  category,
+  onUpdateSkill,
+}: {
+  skill: string
+  category: keyof SkillsType
+  onUpdateSkill: (value: string) => void
+}) {
+  const [newSkill, setNewSkill] = useState(skill)
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSave = () => {
+    onUpdateSkill(newSkill);
+    setIsOpen(false);
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="ghost" className="text-white/70 hover:text-white">
+          <Edit className="w-3 h-3" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="bg-slate-900 border-white/20 max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-white">Edit Skill</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div>
+            <Label className="text-white">Category</Label>
+            <Input readOnly value={category} className="bg-white/10 border-white/20 text-white/70 capitalize" />
+          </div>
+          <div>
+            <Label className="text-white">Skill Name</Label>
+            <Input
+              value={newSkill}
+              onChange={(e) => setNewSkill(e.target.value)}
+              className="bg-white/5 border-white/20 text-white"
+            />
+          </div>
+          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+            Save Changes
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 }
