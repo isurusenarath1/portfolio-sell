@@ -20,34 +20,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
-import { getPortfolio, Skills as SkillsType, Education as EducationType } from "@/app/services/api"
+import { getPortfolio, Skills as SkillsType, Education as EducationType, Experience as ExperienceType } from "@/app/services/api"
 
 // Mock data for other sections - in real app this would come from API/database
 const portfolioData = {
-  experience: [
-    {
-      id: 1,
-      title: "Senior Frontend Developer",
-      company: "Tech Solutions Inc.",
-      period: "2023 - Present",
-      responsibilities: [
-        "Led development of responsive web applications using React and Next.js",
-        "Implemented modern UI/UX designs with Tailwind CSS",
-        "Collaborated with cross-functional teams to deliver high-quality products",
-      ],
-    },
-    {
-      id: 2,
-      title: "Frontend Developer",
-      company: "Digital Agency",
-      period: "2022 - 2023",
-      responsibilities: [
-        "Developed interactive websites for various clients",
-        "Optimized application performance and user experience",
-        "Mentored junior developers and conducted code reviews",
-      ],
-    },
-  ],
   projects: [
     {
       id: 1,
@@ -99,6 +75,7 @@ export default function Portfolio() {
     tools: [],
   });
   const [education, setEducation] = useState<EducationType[]>([]);
+  const [experience, setExperience] = useState<ExperienceType[]>([]);
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -113,6 +90,9 @@ export default function Portfolio() {
         }
         if (data.education) {
           setEducation(data.education)
+        }
+        if (data.experience) {
+          setExperience(data.experience)
         }
       } catch (error) {
         console.error("Failed to fetch portfolio data:", error)
@@ -400,44 +380,57 @@ export default function Portfolio() {
           </motion.div>
 
           <div className="max-w-4xl mx-auto">
-            {portfolioData.experience.map((exp, index) => (
-              <motion.div
-                key={exp.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
-                viewport={{ once: true }}
-                className="mb-12 last:mb-0"
-              >
-                <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-white text-2xl mb-2">{exp.title}</CardTitle>
-                        <div className="flex items-center text-purple-300 mb-2">
-                          <Building className="w-4 h-4 mr-2" />
-                          {exp.company}
-                        </div>
-                        <div className="flex items-center text-white/60">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          {exp.period}
-                        </div>
+            {isLoading
+              ? Array.from({ length: 2 }).map((_, index) => (
+                  <div key={index} className="mb-12 last:mb-0">
+                    <Card className="bg-white/5 border-white/10 p-6 animate-pulse">
+                      <div className="h-7 bg-gray-700 rounded-md w-1/2 mb-2"></div>
+                      <div className="h-5 bg-gray-700 rounded-md w-1/3 mb-4"></div>
+                      <div className="space-y-2">
+                        <div className="h-5 bg-gray-700 rounded-md w-full"></div>
+                        <div className="h-5 bg-gray-700 rounded-md w-5/6"></div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-2">
-                      {exp.responsibilities.map((responsibility, idx) => (
-                        <li key={idx} className="text-white/80 flex items-start">
-                          <span className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0" />
-                          {responsibility}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                    </Card>
+                  </div>
+                ))
+              : experience.map((exp, index) => (
+                  <motion.div
+                    key={exp.id}
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: index * 0.2 }}
+                    viewport={{ once: true }}
+                    className="mb-12 last:mb-0"
+                  >
+                    <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-white text-2xl mb-2">{exp.title}</CardTitle>
+                            <div className="flex items-center text-purple-300 mb-2">
+                              <Building className="w-4 h-4 mr-2" />
+                              {exp.company}
+                            </div>
+                            <div className="flex items-center text-white/60">
+                              <Calendar className="w-4 h-4 mr-2" />
+                              {exp.period}
+                            </div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <ul className="space-y-2">
+                          {exp.responsibilities.map((responsibility, idx) => (
+                            <li key={idx} className="text-white/80 flex items-start">
+                              <span className="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3 flex-shrink-0" />
+                              {responsibility}
+                            </li>
+                          ))}
+                        </ul>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
           </div>
         </div>
       </section>

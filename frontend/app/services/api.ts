@@ -22,6 +22,14 @@ export interface Education {
   description: string;
 }
 
+export interface Experience {
+  id?: number;
+  title: string;
+  company: string;
+  period: string;
+  responsibilities: string[];
+}
+
 export const getPortfolio = async () => {
   const response = await fetch(API_URL);
   if (!response.ok) {
@@ -83,6 +91,34 @@ export const deleteEducation = async (id: number) => {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to delete education');
+  return response.json();
+};
+
+export const addExperience = async (experienceData: Experience) => {
+  const response = await fetch(`${API_URL}/experience`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(experienceData),
+  });
+  if (!response.ok) throw new Error('Failed to add experience');
+  return response.json();
+};
+
+export const updateExperience = async (id: number, experienceData: Experience) => {
+  const response = await fetch(`${API_URL}/experience/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(experienceData),
+  });
+  if (!response.ok) throw new Error('Failed to update experience');
+  return response.json();
+};
+
+export const deleteExperience = async (id: number) => {
+  const response = await fetch(`${API_URL}/experience/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete experience');
   return response.json();
 };
 

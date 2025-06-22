@@ -13,7 +13,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save } from "lucide-react"
-import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation } from "@/app/services/api"
+import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation, Experience as ExperienceType, addExperience, updateExperience, deleteExperience } from "@/app/services/api"
 import { toast } from "sonner"
 
 const initialEducationState = {
@@ -21,6 +21,13 @@ const initialEducationState = {
   institution: "",
   year: "",
   description: "",
+};
+
+const initialExperienceState = {
+  title: "",
+  company: "",
+  period: "",
+  responsibilities: [],
 };
 
 export default function AdminDashboard() {
@@ -39,6 +46,7 @@ export default function AdminDashboard() {
     tools: []
   })
   const [education, setEducation] = useState<EducationType[]>([])
+  const [experience, setExperience] = useState<ExperienceType[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -65,6 +73,9 @@ export default function AdminDashboard() {
       }
       if (data.education) {
         setEducation(data.education)
+      }
+      if (data.experience) {
+        setExperience(data.experience)
       }
     } catch (error) {
       toast.error("Failed to fetch portfolio data")
@@ -208,6 +219,37 @@ export default function AdminDashboard() {
       toast.success("Education deleted successfully");
     } catch (error) {
       toast.error("Failed to delete education");
+    }
+  };
+
+  // Experience Handlers
+  const handleAddExperience = async (newExperience: ExperienceType) => {
+    try {
+      const updatedExperience = await addExperience(newExperience);
+      setExperience(updatedExperience);
+      toast.success("Experience added successfully");
+    } catch (error) {
+      toast.error("Failed to add experience");
+    }
+  };
+
+  const handleUpdateExperience = async (id: number, updatedExp: ExperienceType) => {
+    try {
+      const updatedExperience = await updateExperience(id, updatedExp);
+      setExperience(updatedExperience);
+      toast.success("Experience updated successfully");
+    } catch (error) {
+      toast.error("Failed to update experience");
+    }
+  };
+
+  const handleDeleteExperience = async (id: number) => {
+    try {
+      const updatedExperience = await deleteExperience(id);
+      setExperience(updatedExperience);
+      toast.success("Experience deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete experience");
     }
   };
 
@@ -467,77 +509,28 @@ export default function AdminDashboard() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div className="flex justify-between items-center">
                   <h2 className="text-2xl font-bold text-white">Experience Management</h2>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Experience
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-slate-900 border-white/20 max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle className="text-white">Add Experience</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-2">
-                        <div>
-                          <Label className="text-white">Job Title</Label>
-                          <Input
-                            className="bg-white/5 border-white/20 text-white"
-                            placeholder="Senior Frontend Developer"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-white">Company</Label>
-                          <Input className="bg-white/5 border-white/20 text-white" placeholder="Tech Solutions Inc." />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-white">Start Date</Label>
-                            <Input className="bg-white/5 border-white/20 text-white" placeholder="2023" />
-                          </div>
-                          <div>
-                            <Label className="text-white">End Date</Label>
-                            <Input className="bg-white/5 border-white/20 text-white" placeholder="Present" />
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-white">Responsibilities</Label>
-                          <Textarea
-                            className="bg-white/5 border-white/20 text-white"
-                            placeholder="• Led development of responsive web applications
-• Implemented modern UI/UX designs
-• Collaborated with cross-functional teams"
-                            rows={5}
-                          />
-                          <p className="text-white/60 text-sm mt-1">
-                            Add one responsibility per line with bullet points (•)
-                          </p>
-                        </div>
-                        <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Experience
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <ExperienceDialog onSave={handleAddExperience} />
                 </div>
 
                 <div className="space-y-4">
-                  {[1, 2].map((item) => (
-                    <Card key={item} className="bg-white/10 border-white/20 backdrop-blur-md">
+                  {experience.map((exp) => (
+                    <Card key={exp.id} className="bg-white/10 border-white/20 backdrop-blur-md">
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle className="text-white">Senior Frontend Developer</CardTitle>
+                            <CardTitle className="text-white">{exp.title}</CardTitle>
                             <CardDescription className="text-white/70">
-                              Tech Solutions Inc. • 2023 - Present
+                              {exp.company} • {exp.period}
                             </CardDescription>
                           </div>
                           <div className="flex space-x-2">
-                            <Button size="sm" variant="ghost" className="text-white/70 hover:text-white">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
+                            <ExperienceDialog experience={exp} onSave={(updatedExp) => handleUpdateExperience(exp.id!, updatedExp)} />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-400 hover:text-red-300"
+                              onClick={() => handleDeleteExperience(exp.id!)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
@@ -545,9 +538,9 @@ export default function AdminDashboard() {
                       </CardHeader>
                       <CardContent>
                         <ul className="text-white/80 space-y-1">
-                          <li>• Led development of responsive web applications</li>
-                          <li>• Implemented modern UI/UX designs</li>
-                          <li>• Collaborated with cross-functional teams</li>
+                          {exp.responsibilities.map((resp, i) => (
+                            <li key={i}>• {resp}</li>
+                          ))}
                         </ul>
                       </CardContent>
                     </Card>
@@ -912,6 +905,93 @@ function EducationDialog({
           <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
             <Plus className="w-4 h-4 mr-2" />
             {education ? "Save Changes" : "Add Education"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ExperienceDialog({
+  experience,
+  onSave,
+}: {
+  experience?: ExperienceType;
+  onSave: (data: ExperienceType) => void;
+}) {
+  const [expData, setExpData] = useState(experience || initialExperienceState);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSave = () => {
+    onSave(expData);
+    setIsOpen(false);
+    if (!experience) {
+      setExpData(initialExperienceState);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {experience ? (
+          <Button size="sm" variant="ghost" className="text-white/70 hover:text-white">
+            <Edit className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Experience
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent className="bg-slate-900 border-white/20 max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-white">{experience ? "Edit" : "Add"} Experience</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div>
+            <Label className="text-white">Job Title</Label>
+            <Input
+              value={expData.title}
+              onChange={(e) => setExpData({ ...expData, title: e.target.value })}
+              className="bg-white/5 border-white/20 text-white"
+              placeholder="Senior Frontend Developer"
+            />
+          </div>
+          <div>
+            <Label className="text-white">Company</Label>
+            <Input
+              value={expData.company}
+              onChange={(e) => setExpData({ ...expData, company: e.target.value })}
+              className="bg-white/5 border-white/20 text-white"
+              placeholder="Tech Solutions Inc."
+            />
+          </div>
+          <div>
+            <Label className="text-white">Period</Label>
+            <Input
+              value={expData.period}
+              onChange={(e) => setExpData({ ...expData, period: e.target.value })}
+              className="bg-white/5 border-white/20 text-white"
+              placeholder="2023 - Present"
+            />
+          </div>
+          <div>
+            <Label className="text-white">Responsibilities</Label>
+            <Textarea
+              value={expData.responsibilities.join("\n")}
+              onChange={(e) => setExpData({ ...expData, responsibilities: e.target.value.split("\n") })}
+              className="bg-white/5 border-white/20 text-white"
+              placeholder="• Led development of responsive web applications..."
+              rows={5}
+            />
+            <p className="text-white/60 text-sm mt-1">
+              Add one responsibility per line.
+            </p>
+          </div>
+          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+            <Plus className="w-4 h-4 mr-2" />
+            {experience ? "Save Changes" : "Add Experience"}
           </Button>
         </div>
       </DialogContent>

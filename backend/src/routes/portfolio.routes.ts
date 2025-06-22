@@ -8,6 +8,9 @@ import {
   addEducation,
   updateEducation,
   deleteEducation,
+  addExperience,
+  updateExperience,
+  deleteExperience,
 } from '../controllers/portfolio.controller';
 
 const router = express.Router();
@@ -22,5 +25,10 @@ router.put('/skills', updateSkills);
 router.post('/education', addEducation);
 router.put('/education/:id', updateEducation);
 router.delete('/education/:id', deleteEducation);
+
+// Experience routes
+router.post('/experience', addExperience);
+router.put('/experience/:id', updateExperience);
+router.delete('/experience/:id', deleteExperience);
 
 export default router; 

@@ -154,4 +154,58 @@ export const deleteEducation = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: 'Error deleting education' });
   }
+};
+
+// Experience Controllers
+export const addExperience = async (req: Request, res: Response) => {
+  try {
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+    const newExperience = { ...req.body, id: new Date().getTime() };
+    portfolio.experience.push(newExperience);
+    await portfolio.save();
+    res.status(201).json(portfolio.experience);
+  } catch (error) {
+    res.status(500).json({ message: 'Error adding experience' });
+  }
+};
+
+export const updateExperience = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+    const expIndex = portfolio.experience.findIndex((exp) => exp.id.toString() === id);
+    if (expIndex === -1) {
+      return res.status(404).json({ message: 'Experience entry not found' });
+    }
+    portfolio.experience[expIndex] = { ...portfolio.experience[expIndex], ...req.body };
+    await portfolio.save();
+    res.json(portfolio.experience);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating experience' });
+  }
+};
+
+export const deleteExperience = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+    const initialLength = portfolio.experience.length;
+    portfolio.experience = portfolio.experience.filter((exp) => exp.id.toString() !== id);
+    if (portfolio.experience.length === initialLength) {
+      return res.status(404).json({ message: 'Experience entry not found' });
+    }
+    await portfolio.save();
+    res.json(portfolio.experience);
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting experience' });
+  }
 }; 
