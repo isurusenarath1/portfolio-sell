@@ -221,17 +221,37 @@ export default function Portfolio() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.4, duration: 0.8 }}
               className="flex justify-center order-1 lg:order-2"
+              style={{ perspective: "1000px" }}
             >
-              <div className="relative w-80 h-80 sm:w-[26rem] sm:h-[26rem] lg:w-[30rem] lg:h-[30rem] rounded-full overflow-hidden border-4 border-purple-400 shadow-xl">
+              <motion.div
+                className="relative w-80 h-80 sm:w-[26rem] sm:h-[26rem] lg:w-[30rem] lg:h-[30rem] rounded-full overflow-hidden border-4 border-purple-400 shadow-xl"
+                style={{ transformStyle: "preserve-3d" }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onMouseMove={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = e.clientX - rect.left;
+                  const y = e.clientY - rect.top;
+                  const rotateX = (y / rect.height - 0.5) * -20;
+                  const rotateY = (x / rect.width - 0.5) * 20;
+                  e.currentTarget.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "rotateX(0deg) rotateY(0deg)";
+                }}
+              >
                 <Image
                   src={heroData.image || "/placeholder.svg"}
                   alt="Profile"
                   width={480}
                   height={480}
                   className="w-full h-full object-cover rounded-full"
-                  style={{ filter: "drop-shadow(0px 0px 16px rgba(128,0,128,0.15))" }}
+                  style={{ 
+                    filter: "drop-shadow(0px 0px 16px rgba(128,0,128,0.15))",
+                    transform: "translateZ(40px)"
+                  }}
                 />
-              </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
