@@ -24,7 +24,7 @@ import { getPortfolio, Skills as SkillsType, Education as EducationType, Experie
 import InteractiveBackground from "@/components/ui/interactive-background"
 import CometEffect from "@/components/ui/comet-effect"
 
-// Mock data for other sections - in real app this would come from API/database
+
 const portfolioData = {}
 
 export default function Portfolio() {
