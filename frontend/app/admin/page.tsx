@@ -13,8 +13,15 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save } from "lucide-react"
-import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType } from "@/app/services/api"
+import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation } from "@/app/services/api"
 import { toast } from "sonner"
+
+const initialEducationState = {
+  degree: "",
+  institution: "",
+  year: "",
+  description: "",
+};
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -31,6 +38,7 @@ export default function AdminDashboard() {
     backend: [],
     tools: []
   })
+  const [education, setEducation] = useState<EducationType[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -55,8 +63,13 @@ export default function AdminDashboard() {
       if (data.skills) {
         setSkills(data.skills)
       }
+      if (data.education) {
+        setEducation(data.education)
+      }
     } catch (error) {
       toast.error("Failed to fetch portfolio data")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -166,6 +179,37 @@ export default function AdminDashboard() {
       setIsLoading(false)
     }
   }
+
+  // Education Handlers
+  const handleAddEducation = async (newEducation: EducationType) => {
+    try {
+      const updatedEducation = await addEducation(newEducation);
+      setEducation(updatedEducation);
+      toast.success("Education added successfully");
+    } catch (error) {
+      toast.error("Failed to add education");
+    }
+  };
+
+  const handleUpdateEducation = async (id: number, updatedEdu: EducationType) => {
+    try {
+      const updatedEducation = await updateEducation(id, updatedEdu);
+      setEducation(updatedEducation);
+      toast.success("Education updated successfully");
+    } catch (error) {
+      toast.error("Failed to update education");
+    }
+  };
+
+  const handleDeleteEducation = async (id: number) => {
+    try {
+      const updatedEducation = await deleteEducation(id);
+      setEducation(updatedEducation);
+      toast.success("Education deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete education");
+    }
+  };
 
   if (!isAuthenticated) {
     return <div>Loading...</div>
@@ -382,82 +426,35 @@ export default function AdminDashboard() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div className="flex justify-between items-center">
                   <h2 className="text-2xl font-bold text-white">Education Management</h2>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Education
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-slate-900 border-white/20 max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle className="text-white">Add Education</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-2">
-                        <div>
-                          <Label className="text-white">Degree/Certificate</Label>
-                          <Input
-                            className="bg-white/5 border-white/20 text-white"
-                            placeholder="Bachelor of Computer Science"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-white">Institution</Label>
-                          <Input
-                            className="bg-white/5 border-white/20 text-white"
-                            placeholder="University of Technology"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-white">Start Year</Label>
-                            <Input className="bg-white/5 border-white/20 text-white" placeholder="2020" />
-                          </div>
-                          <div>
-                            <Label className="text-white">End Year</Label>
-                            <Input className="bg-white/5 border-white/20 text-white" placeholder="2024" />
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-white">Description</Label>
-                          <Textarea
-                            className="bg-white/5 border-white/20 text-white"
-                            placeholder="Specialized in Software Engineering and Web Development"
-                            rows={3}
-                          />
-                        </div>
-                        <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Education
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <EducationDialog onSave={handleAddEducation} />
                 </div>
 
                 <div className="space-y-4">
-                  {[1, 2].map((item) => (
-                    <Card key={item} className="bg-white/10 border-white/20 backdrop-blur-md">
+                  {education.map((edu) => (
+                    <Card key={edu.id} className="bg-white/10 border-white/20 backdrop-blur-md">
                       <CardHeader>
                         <div className="flex justify-between items-start">
                           <div>
-                            <CardTitle className="text-white">Bachelor of Computer Science</CardTitle>
+                            <CardTitle className="text-white">{edu.degree}</CardTitle>
                             <CardDescription className="text-white/70">
-                              University of Technology • 2020-2024
+                              {edu.institution} • {edu.year}
                             </CardDescription>
                           </div>
                           <div className="flex space-x-2">
-                            <Button size="sm" variant="ghost" className="text-white/70 hover:text-white">
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
+                            <EducationDialog education={edu} onSave={(updatedEdu) => handleUpdateEducation(edu.id!, updatedEdu)} />
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-400 hover:text-red-300"
+                              onClick={() => handleDeleteEducation(edu.id!)}
+                            >
                               <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-white/80">Specialized in Software Engineering and Web Development</p>
+                        <p className="text-white/80">{edu.description}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -836,4 +833,88 @@ function EditSkillDialog({
       </DialogContent>
     </Dialog>
   )
+}
+
+function EducationDialog({
+  education,
+  onSave,
+}: {
+  education?: EducationType;
+  onSave: (data: EducationType) => void;
+}) {
+  const [eduData, setEduData] = useState(education || initialEducationState);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSave = () => {
+    onSave(eduData);
+    setIsOpen(false);
+    if (!education) {
+      setEduData(initialEducationState);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {education ? (
+          <Button size="sm" variant="ghost" className="text-white/70 hover:text-white">
+            <Edit className="w-4 h-4" />
+          </Button>
+        ) : (
+          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Education
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent className="bg-slate-900 border-white/20 max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-white">{education ? "Edit" : "Add"} Education</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div>
+            <Label className="text-white">Degree/Certificate</Label>
+            <Input
+              value={eduData.degree}
+              onChange={(e) => setEduData({ ...eduData, degree: e.target.value })}
+              className="bg-white/5 border-white/20 text-white"
+              placeholder="Bachelor of Computer Science"
+            />
+          </div>
+          <div>
+            <Label className="text-white">Institution</Label>
+            <Input
+              value={eduData.institution}
+              onChange={(e) => setEduData({ ...eduData, institution: e.target.value })}
+              className="bg-white/5 border-white/20 text-white"
+              placeholder="University of Technology"
+            />
+          </div>
+          <div>
+            <Label className="text-white">Year</Label>
+            <Input
+              value={eduData.year}
+              onChange={(e) => setEduData({ ...eduData, year: e.target.value })}
+              className="bg-white/5 border-white/20 text-white"
+              placeholder="2020-2024"
+            />
+          </div>
+          <div>
+            <Label className="text-white">Description</Label>
+            <Textarea
+              value={eduData.description}
+              onChange={(e) => setEduData({ ...eduData, description: e.target.value })}
+              className="bg-white/5 border-white/20 text-white"
+              placeholder="Specialized in Software Engineering and Web Development"
+              rows={3}
+            />
+          </div>
+          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+            <Plus className="w-4 h-4 mr-2" />
+            {education ? "Save Changes" : "Add Education"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }

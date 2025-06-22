@@ -14,6 +14,14 @@ export interface Skills {
   tools: string[];
 }
 
+export interface Education {
+  id?: number;
+  degree: string;
+  institution: string;
+  year: string;
+  description: string;
+}
+
 export const getPortfolio = async () => {
   const response = await fetch(API_URL);
   if (!response.ok) {
@@ -47,6 +55,34 @@ export const updateSkills = async (skillsData: Skills) => {
   if (!response.ok) {
     throw new Error('Failed to update skills');
   }
+  return response.json();
+};
+
+export const addEducation = async (educationData: Education) => {
+  const response = await fetch(`${API_URL}/education`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(educationData),
+  });
+  if (!response.ok) throw new Error('Failed to add education');
+  return response.json();
+};
+
+export const updateEducation = async (id: number, educationData: Education) => {
+  const response = await fetch(`${API_URL}/education/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(educationData),
+  });
+  if (!response.ok) throw new Error('Failed to update education');
+  return response.json();
+};
+
+export const deleteEducation = async (id: number) => {
+  const response = await fetch(`${API_URL}/education/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete education');
   return response.json();
 };
 

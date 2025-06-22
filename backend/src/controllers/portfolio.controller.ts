@@ -100,4 +100,58 @@ export const updateSkills = async (req: Request, res: Response) => {
     console.error('Error in updateSkills:', error);
     res.status(500).json({ message: 'Error updating skills' });
   }
+};
+
+// Education Controllers
+export const addEducation = async (req: Request, res: Response) => {
+  try {
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+    const newEducation = { ...req.body, id: new Date().getTime() };
+    portfolio.education.push(newEducation);
+    await portfolio.save();
+    res.status(201).json(portfolio.education);
+  } catch (error) {
+    res.status(500).json({ message: 'Error adding education' });
+  }
+};
+
+export const updateEducation = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+    const eduIndex = portfolio.education.findIndex((edu) => edu.id.toString() === id);
+    if (eduIndex === -1) {
+      return res.status(404).json({ message: 'Education entry not found' });
+    }
+    portfolio.education[eduIndex] = { ...portfolio.education[eduIndex], ...req.body };
+    await portfolio.save();
+    res.json(portfolio.education);
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating education' });
+  }
+};
+
+export const deleteEducation = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+    const initialLength = portfolio.education.length;
+    portfolio.education = portfolio.education.filter((edu) => edu.id.toString() !== id);
+    if (portfolio.education.length === initialLength) {
+      return res.status(404).json({ message: 'Education entry not found' });
+    }
+    await portfolio.save();
+    res.json(portfolio.education);
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting education' });
+  }
 }; 

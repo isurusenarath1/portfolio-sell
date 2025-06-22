@@ -20,26 +20,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
-import { getPortfolio, Skills as SkillsType } from "@/app/services/api"
+import { getPortfolio, Skills as SkillsType, Education as EducationType } from "@/app/services/api"
 
 // Mock data for other sections - in real app this would come from API/database
 const portfolioData = {
-  education: [
-    {
-      id: 1,
-      degree: "Bachelor of Computer Science",
-      institution: "University of Technology",
-      year: "2020-2024",
-      description: "Specialized in Software Engineering and Web Development",
-    },
-    {
-      id: 2,
-      degree: "Full Stack Web Development Bootcamp",
-      institution: "Tech Academy",
-      year: "2023",
-      description: "Intensive program covering modern web technologies",
-    },
-  ],
   experience: [
     {
       id: 1,
@@ -114,6 +98,7 @@ export default function Portfolio() {
     backend: [],
     tools: [],
   });
+  const [education, setEducation] = useState<EducationType[]>([]);
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -125,6 +110,9 @@ export default function Portfolio() {
         }
         if (data.skills) {
           setSkills(data.skills)
+        }
+        if (data.education) {
+          setEducation(data.education)
         }
       } catch (error) {
         console.error("Failed to fetch portfolio data:", error)
@@ -349,32 +337,50 @@ export default function Portfolio() {
           </motion.div>
 
           <div className="max-w-4xl mx-auto">
-            {portfolioData.education.map((edu, index) => (
-              <motion.div
-                key={edu.id}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
-                viewport={{ once: true }}
-                className="relative mb-12 last:mb-0"
-              >
-                <div className="flex items-center mb-4">
-                  <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 rounded-full mr-4">
-                    <GraduationCap className="w-6 h-6 text-white" />
+            {isLoading
+              ? Array.from({ length: 2 }).map((_, index) => (
+                  <div key={index} className="mb-12 last:mb-0">
+                    <div className="flex items-center mb-4">
+                      <div className="bg-gray-700 p-3 rounded-full mr-4 w-12 h-12 animate-pulse"></div>
+                      <div>
+                        <div className="h-7 bg-gray-700 rounded-md w-60 mb-2 animate-pulse"></div>
+                        <div className="h-5 bg-gray-700 rounded-md w-40 mb-1 animate-pulse"></div>
+                        <div className="h-5 bg-gray-700 rounded-md w-20 animate-pulse"></div>
+                      </div>
+                    </div>
+                    <Card className="bg-white/5 border-white/10 ml-16">
+                      <CardContent className="pt-6">
+                        <div className="h-5 bg-gray-700 rounded-md w-full animate-pulse"></div>
+                      </CardContent>
+                    </Card>
                   </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-white">{edu.degree}</h3>
-                    <p className="text-purple-300">{edu.institution}</p>
-                    <p className="text-white/60">{edu.year}</p>
-                  </div>
-                </div>
-                <Card className="bg-white/5 border-white/10 backdrop-blur-sm ml-16">
-                  <CardContent className="pt-6">
-                    <p className="text-white/80">{edu.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+                ))
+              : education.map((edu, index) => (
+                  <motion.div
+                    key={edu.id}
+                    initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8, delay: index * 0.2 }}
+                    viewport={{ once: true }}
+                    className="relative mb-12 last:mb-0"
+                  >
+                    <div className="flex items-center mb-4">
+                      <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-3 rounded-full mr-4">
+                        <GraduationCap className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">{edu.degree}</h3>
+                        <p className="text-purple-300">{edu.institution}</p>
+                        <p className="text-white/60">{edu.year}</p>
+                      </div>
+                    </div>
+                    <Card className="bg-white/5 border-white/10 backdrop-blur-sm ml-16">
+                      <CardContent className="pt-6">
+                        <p className="text-white/80">{edu.description}</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
           </div>
         </div>
       </section>
