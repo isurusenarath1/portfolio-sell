@@ -12,8 +12,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save, Search, Eye, MessageSquare } from "lucide-react"
-import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation, Experience as ExperienceType, addExperience, updateExperience, deleteExperience, Project as ProjectType, addProject, updateProject, deleteProject, Contact, ContactStats, getContacts, getContact, updateContactStatus, deleteContact, getContactStats } from "@/app/services/api"
+import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save, Search, Eye, MessageSquare, Settings as SettingsIcon } from "lucide-react"
+import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation, Experience as ExperienceType, addExperience, updateExperience, deleteExperience, Project as ProjectType, addProject, updateProject, deleteProject, Contact, ContactStats, getContacts, getContact, updateContactStatus, deleteContact, getContactStats, Settings, updateSettings } from "@/app/services/api"
 import { toast } from "sonner"
 
 const initialEducationState = {
@@ -39,6 +39,21 @@ const initialProjectState = {
   githubUrl: "",
 };
 
+const initialSettingsState: Settings = {
+  tabName: "",
+  tabImage: "",
+  logoText: "",
+  contact: {
+    email: "",
+    phone: "",
+    address: "",
+  },
+  social: {
+    github: "",
+    linkedin: "",
+  },
+};
+
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [activeTab, setActiveTab] = useState("home")
@@ -57,6 +72,7 @@ export default function AdminDashboard() {
   const [education, setEducation] = useState<EducationType[]>([])
   const [experience, setExperience] = useState<ExperienceType[]>([])
   const [projects, setProjects] = useState<ProjectType[]>([])
+  const [settings, setSettings] = useState<Settings>(initialSettingsState);
   const [contacts, setContacts] = useState<Contact[]>([])
   const [contactStats, setContactStats] = useState<ContactStats>({
     total: 0,
@@ -111,6 +127,9 @@ export default function AdminDashboard() {
       }
       if (data.projects) {
         setProjects(data.projects)
+      }
+      if (data.settings) {
+        setSettings(data.settings);
       }
       if (data.contacts) {
         setContacts(data.contacts)
@@ -388,6 +407,49 @@ export default function AdminDashboard() {
     }
   }, [activeTab, contactFilters])
 
+  // Settings Handlers
+  const handleSettingsChange = (field: keyof Settings, value: any) => {
+    setSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleContactInfoChange = (field: keyof Settings['contact'], value: string) => {
+    setSettings(prev => ({
+      ...prev,
+      contact: { ...prev.contact, [field]: value },
+    }));
+  };
+
+  const handleSocialChange = (field: keyof Settings['social'], value: string) => {
+    setSettings(prev => ({
+      ...prev,
+      social: { ...prev.social, [field]: value },
+    }));
+  };
+
+  const handleTabImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const result = await uploadImage(file);
+      setSettings(prev => ({ ...prev, tabImage: result.imageUrl }));
+      toast.success("Tab image uploaded successfully");
+    } catch (error) {
+      toast.error("Failed to upload tab image");
+    }
+  };
+  
+  const handleSaveSettings = async () => {
+    try {
+      setIsLoading(true);
+      await updateSettings(settings);
+      toast.success("Settings updated successfully");
+    } catch (error) {
+      toast.error("Failed to update settings");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isAuthenticated) {
     return <div>Loading...</div>
   }
@@ -411,6 +473,7 @@ export default function AdminDashboard() {
                 { id: "experience", label: "Experience", icon: Briefcase },
                 { id: "projects", label: "Projects", icon: FolderOpen },
                 { id: "contact", label: "Contact", icon: Mail },
+                { id: "settings", label: "Settings", icon: SettingsIcon },
               ].map((item) => (
                 <motion.button
                   key={item.id}
@@ -896,6 +959,107 @@ export default function AdminDashboard() {
                     </Button>
                   </div>
                 )}
+              </motion.div>
+            </TabsContent>
+
+            {/* Settings Management */}
+            <TabsContent value="settings">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                <Card className="bg-white/10 border-white/20 backdrop-blur-md">
+                  <CardHeader>
+                    <CardTitle className="text-white">General Settings</CardTitle>
+                    <CardDescription className="text-white/70">Manage your portfolio's global settings.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-white">Tab Name</Label>
+                        <Input 
+                          value={settings.tabName}
+                          onChange={(e) => handleSettingsChange("tabName", e.target.value)}
+                          className="bg-white/5 border-white/20 text-white" 
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-white">Text Logo</Label>
+                        <Input
+                          value={settings.logoText}
+                          onChange={(e) => handleSettingsChange("logoText", e.target.value)}
+                          className="bg-white/5 border-white/20 text-white"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-white">Tab Image (Favicon)</Label>
+                      <div className="flex items-center gap-4">
+                        <Input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleTabImageUpload}
+                          className="bg-white/5 border-white/20 text-white file:bg-purple-600 file:text-white file:border-0 file:rounded file:px-4 file:py-2"
+                        />
+                        {settings.tabImage && <Image src={settings.tabImage} alt="Tab preview" width={32} height={32} className="rounded" />}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/10 border-white/20 backdrop-blur-md">
+                  <CardHeader>
+                    <CardTitle className="text-white">Contact Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      <Input 
+                        value={settings.contact.email}
+                        onChange={(e) => handleContactInfoChange("email", e.target.value)}
+                        placeholder="Email"
+                        className="bg-white/5 border-white/20 text-white" 
+                      />
+                      <Input
+                        value={settings.contact.phone}
+                        onChange={(e) => handleContactInfoChange("phone", e.target.value)}
+                        placeholder="Phone"
+                        className="bg-white/5 border-white/20 text-white"
+                      />
+                    </div>
+                    <Input
+                      value={settings.contact.address}
+                      onChange={(e) => handleContactInfoChange("address", e.target.value)}
+                      placeholder="Address"
+                      className="bg-white/5 border-white/20 text-white"
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/10 border-white/20 backdrop-blur-md">
+                  <CardHeader>
+                    <CardTitle className="text-white">Social Links</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Input 
+                      value={settings.social.github}
+                      onChange={(e) => handleSocialChange("github", e.target.value)}
+                      placeholder="GitHub URL"
+                      className="bg-white/5 border-white/20 text-white" 
+                    />
+                    <Input
+                      value={settings.social.linkedin}
+                      onChange={(e) => handleSocialChange("linkedin", e.target.value)}
+                      placeholder="LinkedIn URL"
+                      className="bg-white/5 border-white/20 text-white"
+                    />
+                  </CardContent>
+                </Card>
+                
+                <Button 
+                  className="bg-gradient-to-r from-purple-600 to-pink-600"
+                  onClick={handleSaveSettings}
+                  disabled={isLoading}
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {isLoading ? "Saving..." : "Save Settings"}
+                </Button>
               </motion.div>
             </TabsContent>
           </Tabs>

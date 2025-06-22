@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
-import { getPortfolio, Skills as SkillsType, Education as EducationType, Experience as ExperienceType, Project as ProjectType, createContact } from "@/app/services/api"
+import { getPortfolio, Skills as SkillsType, Education as EducationType, Experience as ExperienceType, Project as ProjectType, createContact, Settings } from "@/app/services/api"
 
 // Mock data for other sections - in real app this would come from API/database
 const portfolioData = {}
@@ -44,6 +44,7 @@ export default function Portfolio() {
   const [education, setEducation] = useState<EducationType[]>([]);
   const [experience, setExperience] = useState<ExperienceType[]>([]);
   const [projects, setProjects] = useState<ProjectType[]>([]);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [isLoading, setIsLoading] = useState(true)
   const [contactForm, setContactForm] = useState({
     name: "",
@@ -71,6 +72,9 @@ export default function Portfolio() {
         }
         if (data.projects) {
           setProjects(data.projects)
+        }
+        if (data.settings) {
+          setSettings(data.settings);
         }
       } catch (error) {
         console.error("Failed to fetch portfolio data:", error)
@@ -125,7 +129,7 @@ export default function Portfolio() {
               animate={{ opacity: 1, x: 0 }}
               className="text-white font-bold text-xl"
             >
-              Portfolio
+              {settings?.logoText || "Portfolio"}
             </motion.div>
             <div className="hidden md:flex space-x-8">
               {["Home", "Skills", "Education", "Experience", "Projects", "Contact"].map((item) => (
@@ -625,21 +629,21 @@ export default function Portfolio() {
                     className="flex items-center text-white/80 hover:text-white transition-colors"
                   >
                     <Mail className="w-5 h-5 mr-4 text-purple-400" />
-                    john.doe@example.com
+                    {settings?.contact?.email || "contact@example.com"}
                   </motion.div>
                   <motion.div
                     whileHover={{ x: 10 }}
                     className="flex items-center text-white/80 hover:text-white transition-colors"
                   >
                     <Phone className="w-5 h-5 mr-4 text-purple-400" />
-                    +1 (555) 123-4567
+                    {settings?.contact?.phone || "+1 234 567 890"}
                   </motion.div>
                   <motion.div
                     whileHover={{ x: 10 }}
                     className="flex items-center text-white/80 hover:text-white transition-colors"
                   >
                     <MapPin className="w-5 h-5 mr-4 text-purple-400" />
-                    San Francisco, CA
+                    {settings?.contact?.address || "City, Country"}
                   </motion.div>
                 </div>
               </div>
@@ -650,7 +654,9 @@ export default function Portfolio() {
                   <motion.a
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    href="#"
+                    href={settings?.social?.github || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="bg-white/10 p-3 rounded-full hover:bg-white/20 transition-colors"
                   >
                     <Github className="w-6 h-6 text-white" />
@@ -658,7 +664,9 @@ export default function Portfolio() {
                   <motion.a
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    href="#"
+                    href={settings?.social?.linkedin || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="bg-white/10 p-3 rounded-full hover:bg-white/20 transition-colors"
                   >
                     <Linkedin className="w-6 h-6 text-white" />
@@ -673,7 +681,7 @@ export default function Portfolio() {
       {/* Footer */}
       <footer className="py-8 border-t border-white/10">
         <div className="container mx-auto px-4 sm:px-6 text-center">
-          <p className="text-white/60">© 2024 John Doe. All rights reserved.</p>
+          <p className="text-white/60">© {new Date().getFullYear()} {heroData.name || "Your Name"}. All rights reserved.</p>
         </div>
       </footer>
     </div>

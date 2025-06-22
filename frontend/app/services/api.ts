@@ -73,8 +73,23 @@ export interface ContactResponse {
   pagination: ContactPagination;
 }
 
+export interface Settings {
+  tabName: string;
+  tabImage: string;
+  logoText: string;
+  contact: {
+    email: string;
+    phone: string;
+    address: string;
+  };
+  social: {
+    github: string;
+    linkedin: string;
+  };
+}
+
 export const getPortfolio = async () => {
-  const response = await fetch(API_URL);
+  const response = await fetch(API_URL, { cache: 'no-store' });
   if (!response.ok) {
     throw new Error('Failed to fetch portfolio data');
   }
@@ -105,6 +120,20 @@ export const updateSkills = async (skillsData: Skills) => {
   });
   if (!response.ok) {
     throw new Error('Failed to update skills');
+  }
+  return response.json();
+};
+
+export const updateSettings = async (settingsData: Partial<Settings>) => {
+  const response = await fetch(`${API_URL}/settings`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ settings: settingsData }),
+  });
+  if (!response.ok) {
+    throw new Error('Failed to update settings');
   }
   return response.json();
 };

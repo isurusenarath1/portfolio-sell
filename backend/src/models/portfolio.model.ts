@@ -36,6 +36,20 @@ export interface IPortfolio extends Document {
     liveUrl: string;
     githubUrl: string;
   }>;
+  settings: {
+    tabName: string;
+    tabImage: string;
+    logoText: string;
+    contact: {
+      email: string;
+      phone: string;
+      address: string;
+    };
+    social: {
+      github: string;
+      linkedin: string;
+    };
+  };
 }
 
 const PortfolioSchema: Schema = new Schema({
@@ -73,7 +87,21 @@ const PortfolioSchema: Schema = new Schema({
     techStack: [{ type: String }],
     liveUrl: { type: String, required: true },
     githubUrl: { type: String, required: true }
-  }]
+  }],
+  settings: {
+    tabName: { type: String, default: "My Portfolio" },
+    tabImage: { type: String, default: "/placeholder-logo.svg" },
+    logoText: { type: String, default: "Portfolio" },
+    contact: {
+      email: { type: String, default: "contact@example.com" },
+      phone: { type: String, default: "+1 234 567 890" },
+      address: { type: String, default: "City, Country" }
+    },
+    social: {
+      github: { type: String, default: "https://github.com" },
+      linkedin: { type: String, default: "https://linkedin.com" }
+    }
+  }
 }, {
   timestamps: true
 });

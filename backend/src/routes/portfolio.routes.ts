@@ -14,6 +14,7 @@ import {
   addProject,
   updateProject,
   deleteProject,
+  updateSettings,
 } from '../controllers/portfolio.controller';
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.post('/', createPortfolio);
 router.put('/', updatePortfolio);
 router.delete('/', deletePortfolio);
 router.put('/skills', updateSkills);
+router.put('/settings', updateSettings);
 
 // Education routes
 router.post('/education', addEducation);

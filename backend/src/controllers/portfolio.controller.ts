@@ -13,6 +13,20 @@ export const getPortfolio = async (req: Request, res: Response) => {
           subtitle: "Your Subtitle",
           welcomeMessage: "Welcome to my portfolio",
           image: "https://res.cloudinary.com/doxkkbljh/image/upload/v1/portfolio/placeholder"
+        },
+        settings: {
+          tabName: "My Portfolio",
+          tabImage: "/placeholder-logo.svg",
+          logoText: "Portfolio",
+          contact: {
+            email: "contact@example.com",
+            phone: "+1 234 567 890",
+            address: "City, Country"
+          },
+          social: {
+            github: "https://github.com",
+            linkedin: "https://linkedin.com"
+          }
         }
       });
       await defaultPortfolio.save();
@@ -270,5 +284,35 @@ export const deleteProject = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error in deleteProject:', error);
     res.status(500).json({ message: 'Error deleting project' });
+  }
+};
+
+export const updateSettings = async (req: Request, res: Response) => {
+  try {
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+
+    if (req.body.settings) {
+      portfolio.settings = {
+        ...portfolio.settings,
+        ...req.body.settings,
+        contact: {
+          ...portfolio.settings.contact,
+          ...(req.body.settings.contact || {}),
+        },
+        social: {
+          ...portfolio.settings.social,
+          ...(req.body.settings.social || {}),
+        },
+      };
+    }
+
+    await portfolio.save();
+    res.json(portfolio);
+  } catch (error) {
+    console.error('Error in updateSettings:', error);
+    res.status(500).json({ message: 'Error updating settings' });
   }
 }; 
