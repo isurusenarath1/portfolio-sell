@@ -599,7 +599,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <Button 
-                      className="bg-gradient-to-r from-purple-600 to-pink-600"
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 text-white"
                       onClick={handleSaveHero}
                       disabled={isLoading}
                     >
@@ -1053,7 +1053,7 @@ export default function AdminDashboard() {
                 </Card>
                 
                 <Button 
-                  className="bg-gradient-to-r from-purple-600 to-pink-600"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white"
                   onClick={handleSaveSettings}
                   disabled={isLoading}
                 >
@@ -1116,7 +1116,7 @@ export default function AdminDashboard() {
                 <Button
                   variant="outline"
                   onClick={() => setSelectedContact(null)}
-                  className="border-white/20 text-black hover:bg-white/10"
+                  className="border-white/20 text-white hover:bg-white/10"
                 >
                   Close
                 </Button>
@@ -1154,7 +1154,7 @@ function AddSkillDialog({ onAddSkill }: { onAddSkill: (category: keyof SkillsTyp
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
+        <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto text-white">
           <Plus className="w-4 h-4 mr-2" />
           Add Skill
         </Button>
@@ -1185,7 +1185,7 @@ function AddSkillDialog({ onAddSkill }: { onAddSkill: (category: keyof SkillsTyp
               placeholder="e.g. React, Node.js, etc."
             />
           </div>
-          <Button onClick={handleSubmit} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+          <Button onClick={handleSubmit} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white">
             <Plus className="w-4 h-4 mr-2" />
             Add Skill
           </Button>
@@ -1236,7 +1236,7 @@ function EditSkillDialog({
               className="bg-white/5 border-white/20 text-white"
             />
           </div>
-          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white">
             Save Changes
           </Button>
         </div>
@@ -1271,7 +1271,7 @@ function EducationDialog({
             <Edit className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
+          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto text-white">
             <Plus className="w-4 h-4 mr-2" />
             Add Education
           </Button>
@@ -1319,7 +1319,7 @@ function EducationDialog({
               rows={3}
             />
           </div>
-          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white">
             <Plus className="w-4 h-4 mr-2" />
             {education ? "Save Changes" : "Add Education"}
           </Button>
@@ -1355,7 +1355,7 @@ function ExperienceDialog({
             <Edit className="w-4 h-4" />
           </Button>
         ) : (
-          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
+          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto text-white">
             <Plus className="w-4 h-4 mr-2" />
             Add Experience
           </Button>
@@ -1406,7 +1406,7 @@ function ExperienceDialog({
               Add one responsibility per line.
             </p>
           </div>
-          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white">
             <Plus className="w-4 h-4 mr-2" />
             {experience ? "Save Changes" : "Add Experience"}
           </Button>
@@ -1454,7 +1454,7 @@ function ProjectDialog({
             <Edit className="w-3 h-3" />
           </Button>
         ) : (
-          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
+          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto text-white">
             <Plus className="w-4 h-4 mr-2" />
             Add Project
           </Button>
@@ -1505,7 +1505,7 @@ function ProjectDialog({
             />
             {projData.image && <Image src={projData.image} alt="Project preview" width={100} height={100} className="mt-2 rounded" />}
           </div>
-          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white">
             {project ? "Save Changes" : "Add Project"}
           </Button>
         </div>
