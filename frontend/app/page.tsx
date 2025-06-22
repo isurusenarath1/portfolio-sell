@@ -706,7 +706,7 @@ export default function Portfolio() {
       {/* Footer */}
       <footer className="py-8 border-t border-white/10">
         <div className="container mx-auto px-4 sm:px-6 text-center">
-          <p className="text-white/60">© {new Date().getFullYear()} {heroData.name || "Your Name"}. All rights reserved.</p>
+          <p className="text-white/60">© 2025 Isuru Senarath. All rights reserved.</p>
         </div>
       </footer>
     </div>
