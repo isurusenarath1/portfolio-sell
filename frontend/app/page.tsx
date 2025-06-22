@@ -20,15 +20,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
-import { getPortfolio } from "@/app/services/api"
+import { getPortfolio, Skills as SkillsType } from "@/app/services/api"
 
 // Mock data for other sections - in real app this would come from API/database
 const portfolioData = {
-  skills: {
-    frontend: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion"],
-    backend: ["Node.js", "Express", "PostgreSQL", "MongoDB", "GraphQL"],
-    tools: ["Git", "Docker", "AWS", "Figma", "VS Code"],
-  },
   education: [
     {
       id: 1,
@@ -114,23 +109,31 @@ export default function Portfolio() {
     welcomeMessage: "",
     image: "/placeholder.svg?height=400&width=400"
   })
+  const [skills, setSkills] = useState<SkillsType>({
+    frontend: [],
+    backend: [],
+    tools: [],
+  });
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchHeroData = async () => {
+    const fetchPortfolioData = async () => {
       try {
         const data = await getPortfolio()
         if (data.hero) {
           setHeroData(data.hero)
         }
+        if (data.skills) {
+          setSkills(data.skills)
+        }
       } catch (error) {
-        console.error("Failed to fetch hero data:", error)
+        console.error("Failed to fetch portfolio data:", error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchHeroData()
+    fetchPortfolioData()
   }, [])
 
   const scrollToSection = (sectionId: string) => {
@@ -278,42 +281,55 @@ export default function Portfolio() {
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {Object.entries(portfolioData.skills).map(([category, skills], index) => (
-              <motion.div
-                key={category}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
-                viewport={{ once: true }}
-              >
-                <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
-                  <CardHeader>
-                    <CardTitle className="text-white capitalize text-xl">{category}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {skills.map((skill, skillIndex) => (
-                        <motion.div
-                          key={skill}
-                          initial={{ opacity: 0, scale: 0.8 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: skillIndex * 0.1 }}
-                          whileHover={{ scale: 1.05 }}
-                          viewport={{ once: true }}
-                        >
-                          <Badge
-                            variant="secondary"
-                            className="bg-purple-600/20 text-purple-300 hover:bg-purple-600/30"
-                          >
-                            {skill}
-                          </Badge>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </CardContent>
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <Card key={index} className="bg-white/5 border-white/10 p-6">
+                  <div className="h-6 bg-gray-700 rounded-md w-1/3 mb-4 animate-pulse"></div>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.from({ length: 4 }).map((_, skillIndex) => (
+                      <div key={skillIndex} className="h-6 w-20 bg-gray-700 rounded-md animate-pulse"></div>
+                    ))}
+                  </div>
                 </Card>
-              </motion.div>
-            ))}
+              ))
+            ) : (
+              (Object.entries(skills) as [keyof SkillsType, string[]][]).map(([category, skillsList], index) => (
+                <motion.div
+                  key={category}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                >
+                  <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300">
+                    <CardHeader>
+                      <CardTitle className="text-white capitalize text-xl">{category}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {skillsList.map((skill, skillIndex) => (
+                          <motion.div
+                            key={skillIndex}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: skillIndex * 0.1 }}
+                            whileHover={{ scale: 1.05 }}
+                            viewport={{ once: true }}
+                          >
+                            <Badge
+                              variant="secondary"
+                              className="bg-purple-600/20 text-purple-300 hover:bg-purple-600/30"
+                            >
+                              {skill}
+                            </Badge>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            )}
           </div>
         </div>
       </section>
