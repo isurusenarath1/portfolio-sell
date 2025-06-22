@@ -20,43 +20,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
-import { getPortfolio, Skills as SkillsType, Education as EducationType, Experience as ExperienceType } from "@/app/services/api"
+import { getPortfolio, Skills as SkillsType, Education as EducationType, Experience as ExperienceType, Project as ProjectType } from "@/app/services/api"
 
 // Mock data for other sections - in real app this would come from API/database
-const portfolioData = {
-  projects: [
-    {
-      id: 1,
-      title: "E-Commerce Platform",
-      description:
-        "A modern e-commerce platform built with Next.js, featuring real-time inventory management and secure payment processing.",
-      image: "/placeholder.svg?height=300&width=400",
-      techStack: ["Next.js", "TypeScript", "Stripe", "PostgreSQL"],
-      liveUrl: "#",
-      githubUrl: "#",
-    },
-    {
-      id: 2,
-      title: "Task Management App",
-      description:
-        "A collaborative task management application with real-time updates, drag-and-drop functionality, and team collaboration features.",
-      image: "/placeholder.svg?height=300&width=400",
-      techStack: ["React", "Node.js", "Socket.io", "MongoDB"],
-      liveUrl: "#",
-      githubUrl: "#",
-    },
-    {
-      id: 3,
-      title: "Weather Dashboard",
-      description:
-        "A beautiful weather dashboard with interactive charts, location-based forecasts, and responsive design.",
-      image: "/placeholder.svg?height=300&width=400",
-      techStack: ["React", "Chart.js", "OpenWeather API", "Tailwind CSS"],
-      liveUrl: "#",
-      githubUrl: "#",
-    },
-  ],
-}
+const portfolioData = {}
 
 export default function Portfolio() {
   const { scrollYProgress } = useScroll()
@@ -76,6 +43,7 @@ export default function Portfolio() {
   });
   const [education, setEducation] = useState<EducationType[]>([]);
   const [experience, setExperience] = useState<ExperienceType[]>([]);
+  const [projects, setProjects] = useState<ProjectType[]>([]);
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -93,6 +61,9 @@ export default function Portfolio() {
         }
         if (data.experience) {
           setExperience(data.experience)
+        }
+        if (data.projects) {
+          setProjects(data.projects)
         }
       } catch (error) {
         console.error("Failed to fetch portfolio data:", error)
@@ -452,61 +423,77 @@ export default function Portfolio() {
           </motion.div>
 
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {portfolioData.projects.map((project, index) => (
-              <motion.div
-                key={project.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: index * 0.2 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -10 }}
-                className="group cursor-pointer"
-              >
-                <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 overflow-hidden">
-                  <div className="relative overflow-hidden">
-                    <Image
-                      src={project.image || "/placeholder.svg"}
-                      alt={project.title}
-                      width={400}
-                      height={300}
-                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-white">{project.title}</CardTitle>
-                    <CardDescription className="text-white/70">{project.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.techStack.map((tech) => (
-                        <Badge key={tech} variant="outline" className="border-purple-500/30 text-purple-300">
-                          {tech}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                        onClick={() => window.open(project.liveUrl, "_blank")}
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Live Demo
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                        onClick={() => window.open(project.githubUrl, "_blank")}
-                      >
-                        <Github className="w-4 h-4 mr-2" />
-                        GitHub
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+            {isLoading
+              ? Array.from({ length: 3 }).map((_, index) => (
+                  <Card key={index} className="bg-white/5 border-white/10 animate-pulse">
+                    <div className="h-48 bg-gray-700 rounded-t-lg"></div>
+                    <CardHeader>
+                      <div className="h-7 bg-gray-700 rounded-md w-3/4 mb-2"></div>
+                      <div className="h-5 bg-gray-700 rounded-md w-full"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        <div className="h-6 w-20 bg-gray-700 rounded-md"></div>
+                        <div className="h-6 w-24 bg-gray-700 rounded-md"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              : projects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: index * 0.2 }}
+                    viewport={{ once: true }}
+                    whileHover={{ y: -10 }}
+                    className="group cursor-pointer"
+                  >
+                    <Card className="bg-white/5 border-white/10 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 overflow-hidden">
+                      <div className="relative overflow-hidden">
+                        <Image
+                          src={project.image || "/placeholder.svg"}
+                          alt={project.title}
+                          width={400}
+                          height={300}
+                          className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                      <CardHeader>
+                        <CardTitle className="text-white">{project.title}</CardTitle>
+                        <CardDescription className="text-white/70">{project.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {project.techStack.map((tech) => (
+                            <Badge key={tech} variant="outline" className="border-purple-500/30 text-purple-300">
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                            onClick={() => window.open(project.liveUrl, "_blank")}
+                          >
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Live Demo
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                            onClick={() => window.open(project.githubUrl, "_blank")}
+                          >
+                            <Github className="w-4 h-4 mr-2" />
+                            GitHub
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
           </div>
         </div>
       </section>

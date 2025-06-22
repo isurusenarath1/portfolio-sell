@@ -114,6 +114,7 @@ export const addEducation = async (req: Request, res: Response) => {
     await portfolio.save();
     res.status(201).json(portfolio.education);
   } catch (error) {
+    console.error('Error in addEducation:', error);
     res.status(500).json({ message: 'Error adding education' });
   }
 };
@@ -133,6 +134,7 @@ export const updateEducation = async (req: Request, res: Response) => {
     await portfolio.save();
     res.json(portfolio.education);
   } catch (error) {
+    console.error('Error in updateEducation:', error);
     res.status(500).json({ message: 'Error updating education' });
   }
 };
@@ -152,6 +154,7 @@ export const deleteEducation = async (req: Request, res: Response) => {
     await portfolio.save();
     res.json(portfolio.education);
   } catch (error) {
+    console.error('Error in deleteEducation:', error);
     res.status(500).json({ message: 'Error deleting education' });
   }
 };
@@ -168,6 +171,7 @@ export const addExperience = async (req: Request, res: Response) => {
     await portfolio.save();
     res.status(201).json(portfolio.experience);
   } catch (error) {
+    console.error('Error in addExperience:', error);
     res.status(500).json({ message: 'Error adding experience' });
   }
 };
@@ -187,6 +191,7 @@ export const updateExperience = async (req: Request, res: Response) => {
     await portfolio.save();
     res.json(portfolio.experience);
   } catch (error) {
+    console.error('Error in updateExperience:', error);
     res.status(500).json({ message: 'Error updating experience' });
   }
 };
@@ -206,6 +211,64 @@ export const deleteExperience = async (req: Request, res: Response) => {
     await portfolio.save();
     res.json(portfolio.experience);
   } catch (error) {
+    console.error('Error in deleteExperience:', error);
     res.status(500).json({ message: 'Error deleting experience' });
+  }
+};
+
+// Project Controllers
+export const addProject = async (req: Request, res: Response) => {
+  try {
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+    const newProject = { ...req.body, id: new Date().getTime() };
+    portfolio.projects.push(newProject);
+    await portfolio.save();
+    res.status(201).json(portfolio.projects);
+  } catch (error) {
+    console.error('Error in addProject:', error);
+    res.status(500).json({ message: 'Error adding project' });
+  }
+};
+
+export const updateProject = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+    const projIndex = portfolio.projects.findIndex((p) => p.id.toString() === id);
+    if (projIndex === -1) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    portfolio.projects[projIndex] = { ...portfolio.projects[projIndex], ...req.body };
+    await portfolio.save();
+    res.json(portfolio.projects);
+  } catch (error) {
+    console.error('Error in updateProject:', error);
+    res.status(500).json({ message: 'Error updating project' });
+  }
+};
+
+export const deleteProject = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const portfolio = await Portfolio.findOne();
+    if (!portfolio) {
+      return res.status(404).json({ message: 'Portfolio not found' });
+    }
+    const initialLength = portfolio.projects.length;
+    portfolio.projects = portfolio.projects.filter((p) => p.id.toString() !== id);
+    if (portfolio.projects.length === initialLength) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+    await portfolio.save();
+    res.json(portfolio.projects);
+  } catch (error) {
+    console.error('Error in deleteProject:', error);
+    res.status(500).json({ message: 'Error deleting project' });
   }
 }; 

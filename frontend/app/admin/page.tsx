@@ -13,7 +13,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Home, User, GraduationCap, Briefcase, FolderOpen, Mail, Plus, Edit, Trash2, LogOut, Save } from "lucide-react"
-import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation, Experience as ExperienceType, addExperience, updateExperience, deleteExperience } from "@/app/services/api"
+import { getPortfolio, updateHeroSection, uploadImage, HeroSection, updateSkills, Skills as SkillsType, Education as EducationType, addEducation, updateEducation, deleteEducation, Experience as ExperienceType, addExperience, updateExperience, deleteExperience, Project as ProjectType, addProject, updateProject, deleteProject } from "@/app/services/api"
 import { toast } from "sonner"
 
 const initialEducationState = {
@@ -28,6 +28,15 @@ const initialExperienceState = {
   company: "",
   period: "",
   responsibilities: [],
+};
+
+const initialProjectState = {
+  title: "",
+  description: "",
+  image: "",
+  techStack: [],
+  liveUrl: "",
+  githubUrl: "",
 };
 
 export default function AdminDashboard() {
@@ -47,6 +56,7 @@ export default function AdminDashboard() {
   })
   const [education, setEducation] = useState<EducationType[]>([])
   const [experience, setExperience] = useState<ExperienceType[]>([])
+  const [projects, setProjects] = useState<ProjectType[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -76,6 +86,9 @@ export default function AdminDashboard() {
       }
       if (data.experience) {
         setExperience(data.experience)
+      }
+      if (data.projects) {
+        setProjects(data.projects)
       }
     } catch (error) {
       toast.error("Failed to fetch portfolio data")
@@ -250,6 +263,37 @@ export default function AdminDashboard() {
       toast.success("Experience deleted successfully");
     } catch (error) {
       toast.error("Failed to delete experience");
+    }
+  };
+
+  // Project Handlers
+  const handleAddProject = async (newProject: ProjectType) => {
+    try {
+      const updatedProjects = await addProject(newProject);
+      setProjects(updatedProjects);
+      toast.success("Project added successfully");
+    } catch (error) {
+      toast.error("Failed to add project");
+    }
+  };
+
+  const handleUpdateProject = async (id: number, updatedProj: ProjectType) => {
+    try {
+      const updatedProjects = await updateProject(id, updatedProj);
+      setProjects(updatedProjects);
+      toast.success("Project updated successfully");
+    } catch (error) {
+      toast.error("Failed to update project");
+    }
+  };
+
+  const handleDeleteProject = async (id: number) => {
+    try {
+      const updatedProjects = await deleteProject(id);
+      setProjects(updatedProjects);
+      toast.success("Project deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete project");
     }
   };
 
@@ -554,128 +598,43 @@ export default function AdminDashboard() {
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <h2 className="text-2xl font-bold text-white">Projects Management</h2>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Project
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-slate-900 border-white/20 max-w-2xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle className="text-white">Add New Project</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-2">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-white">Project Title</Label>
-                            <Input
-                              className="bg-white/5 border-white/20 text-white"
-                              placeholder="Enter project title"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-white">Live URL</Label>
-                            <Input className="bg-white/5 border-white/20 text-white" placeholder="https://..." />
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-white">GitHub URL</Label>
-                          <Input
-                            className="bg-white/5 border-white/20 text-white"
-                            placeholder="https://github.com/..."
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-white">Description</Label>
-                          <Textarea
-                            className="bg-white/5 border-white/20 text-white"
-                            placeholder="Describe your project..."
-                            rows={3}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-white">Tech Stack (comma separated)</Label>
-                          <Input
-                            className="bg-white/5 border-white/20 text-white"
-                            placeholder="React, Next.js, TypeScript..."
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-white">Project Image</Label>
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            className="bg-white/5 border-white/20 text-white file:bg-purple-600 file:text-white file:border-0 file:rounded file:px-4 file:py-2"
-                          />
-                          <p className="text-white/60 text-sm mt-1">
-                            Upload project thumbnail (recommended: 400x300px)
-                          </p>
-                        </div>
-                        <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Project
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <ProjectDialog onSave={handleAddProject} />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[1, 2, 3].map((item) => (
-                    <Card key={item} className="bg-white/10 border-white/20 backdrop-blur-md">
+                  {projects.map((project) => (
+                    <Card key={project.id} className="bg-white/10 border-white/20 backdrop-blur-md">
                       <div className="relative">
-                        <div className="w-full h-32 bg-gradient-to-r from-purple-600/20 to-pink-600/20 rounded-t-lg"></div>
+                        <Image
+                          src={project.image || "/placeholder.svg"}
+                          alt={project.title}
+                          width={400}
+                          height={200}
+                          className="w-full h-32 object-cover rounded-t-lg"
+                        />
                         <div className="absolute top-2 right-2 flex space-x-1">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button size="sm" variant="ghost" className="text-white/70 hover:text-white bg-black/20">
-                                <Edit className="w-3 h-3" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="bg-slate-900 border-white/20 max-w-2xl">
-                              <DialogHeader>
-                                <DialogTitle className="text-white">Edit Project</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <div>
-                                  <Label className="text-white">Project Title</Label>
-                                  <Input
-                                    defaultValue="E-Commerce Platform"
-                                    className="bg-white/5 border-white/20 text-white"
-                                  />
-                                </div>
-                                <div>
-                                  <Label className="text-white">Update Image</Label>
-                                  <Input
-                                    type="file"
-                                    accept="image/*"
-                                    className="bg-white/5 border-white/20 text-white file:bg-purple-600 file:text-white file:border-0 file:rounded file:px-4 file:py-2"
-                                  />
-                                </div>
-                                <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
-                                  Update Project
-                                </Button>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                          <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300 bg-black/20">
+                          <ProjectDialog project={project} onSave={(updatedProj) => handleUpdateProject(project.id!, updatedProj)} />
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-400 hover:text-red-300 bg-black/20"
+                            onClick={() => handleDeleteProject(project.id!)}
+                          >
                             <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>
                       </div>
                       <CardHeader>
-                        <CardTitle className="text-white text-lg">E-Commerce Platform</CardTitle>
+                        <CardTitle className="text-white text-lg">{project.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-white/70 text-sm mb-3">A modern e-commerce platform built with Next.js</p>
+                        <p className="text-white/70 text-sm mb-3">{project.description}</p>
                         <div className="flex flex-wrap gap-1">
-                          <Badge variant="outline" className="border-purple-500/30 text-purple-300 text-xs">
-                            Next.js
-                          </Badge>
-                          <Badge variant="outline" className="border-purple-500/30 text-purple-300 text-xs">
-                            TypeScript
-                          </Badge>
+                          {project.techStack.map((tech, i) => (
+                            <Badge key={i} variant="outline" className="border-purple-500/30 text-purple-300 text-xs">
+                              {tech}
+                            </Badge>
+                          ))}
                         </div>
                       </CardContent>
                     </Card>
@@ -992,6 +951,104 @@ function ExperienceDialog({
           <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
             <Plus className="w-4 h-4 mr-2" />
             {experience ? "Save Changes" : "Add Experience"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ProjectDialog({
+  project,
+  onSave,
+}: {
+  project?: ProjectType;
+  onSave: (data: ProjectType) => void;
+}) {
+  const [projData, setProjData] = useState(project || initialProjectState);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleSave = async () => {
+    onSave(projData);
+    setIsOpen(false);
+    if (!project) {
+      setProjData(initialProjectState);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return;
+    try {
+      const result = await uploadImage(file);
+      setProjData(prev => ({ ...prev, image: result.imageUrl }));
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      toast.error("Failed to upload image");
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        {project ? (
+          <Button size="sm" variant="ghost" className="text-white/70 hover:text-white bg-black/20">
+            <Edit className="w-3 h-3" />
+          </Button>
+        ) : (
+          <Button className="bg-gradient-to-r from-purple-600 to-pink-600 w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Project
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent className="bg-slate-900 border-white/20 max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-white">{project ? "Edit" : "Add"} Project</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <Input
+            value={projData.title}
+            onChange={(e) => setProjData({ ...projData, title: e.target.value })}
+            placeholder="Project Title"
+            className="bg-white/5 border-white/20 text-white"
+          />
+          <Textarea
+            value={projData.description}
+            onChange={(e) => setProjData({ ...projData, description: e.target.value })}
+            placeholder="Project Description"
+            className="bg-white/5 border-white/20 text-white"
+          />
+          <Input
+            value={projData.techStack.join(", ")}
+            onChange={(e) => setProjData({ ...projData, techStack: e.target.value.split(",").map(s => s.trim()) })}
+            placeholder="Tech Stack (comma-separated)"
+            className="bg-white/5 border-white/20 text-white"
+          />
+          <Input
+            value={projData.liveUrl}
+            onChange={(e) => setProjData({ ...projData, liveUrl: e.target.value })}
+            placeholder="Live URL"
+            className="bg-white/5 border-white/20 text-white"
+          />
+          <Input
+            value={projData.githubUrl}
+            onChange={(e) => setProjData({ ...projData, githubUrl: e.target.value })}
+            placeholder="GitHub URL"
+            className="bg-white/5 border-white/20 text-white"
+          />
+          <div>
+            <Label className="text-white">Project Image</Label>
+            <Input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="bg-white/5 border-white/20 text-white file:bg-purple-600 file:text-white file:border-0 file:rounded file:px-4 file:py-2"
+            />
+            {projData.image && <Image src={projData.image} alt="Project preview" width={100} height={100} className="mt-2 rounded" />}
+          </div>
+          <Button onClick={handleSave} className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+            {project ? "Save Changes" : "Add Project"}
           </Button>
         </div>
       </DialogContent>

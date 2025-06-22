@@ -30,6 +30,16 @@ export interface Experience {
   responsibilities: string[];
 }
 
+export interface Project {
+  id?: number;
+  title: string;
+  description: string;
+  image: string;
+  techStack: string[];
+  liveUrl: string;
+  githubUrl: string;
+}
+
 export const getPortfolio = async () => {
   const response = await fetch(API_URL);
   if (!response.ok) {
@@ -119,6 +129,34 @@ export const deleteExperience = async (id: number) => {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Failed to delete experience');
+  return response.json();
+};
+
+export const addProject = async (projectData: Project) => {
+  const response = await fetch(`${API_URL}/projects`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(projectData),
+  });
+  if (!response.ok) throw new Error('Failed to add project');
+  return response.json();
+};
+
+export const updateProject = async (id: number, projectData: Project) => {
+  const response = await fetch(`${API_URL}/projects/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(projectData),
+  });
+  if (!response.ok) throw new Error('Failed to update project');
+  return response.json();
+};
+
+export const deleteProject = async (id: number) => {
+  const response = await fetch(`${API_URL}/projects/${id}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete project');
   return response.json();
 };
 
