@@ -68,7 +68,7 @@ export default function AdminLogin() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@gmail.com"
+                    placeholder="example@gmail.com"
                     className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-white/50"
                     required
                   />
@@ -86,7 +86,7 @@ export default function AdminLogin() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="isuru123"
+                    placeholder="12345"
                     className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-white/50"
                     required
                   />
